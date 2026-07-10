@@ -279,7 +279,7 @@ function RoleOptSheet() {
             </button>
           </div>
           <button
-            onClick={() => set({ screen: 's4', sheet: null })}
+            onClick={() => set({ attendeeScreen: 's4', sheet: null })}
             style={{
               marginTop: 14,
               width: '100%',
@@ -411,11 +411,12 @@ function CellSheet() {
 }
 
 function ConfirmDialog() {
-  const { set } = useStore()
+  const { state, set } = useStore()
   const close = () => set({ sheet: null })
+  const confirmLabel = state.reRec ? '목요일 10:00' : '화요일 15:00'
   return (
     <BottomSheet onClose={close} center>
-      <div style={{ fontSize: 18, fontWeight: 800, color: color.textPrimary }}>화요일 15:00으로 확정할까요?</div>
+      <div style={{ fontSize: 18, fontWeight: 800, color: color.textPrimary }}>{confirmLabel}으로 확정할까요?</div>
       <div style={{ fontSize: 13.5, color: color.textTertiary, marginTop: 8, lineHeight: 1.6 }}>
         확정하면 참석자 모두에게
         <br />
@@ -440,7 +441,9 @@ function ConfirmDialog() {
           취소
         </button>
         <button
-          onClick={() => set({ confirmed: true, sheet: null })}
+          onClick={() =>
+            set({ confirmed: true, sheet: null, attendeeScreen: 's4kakao', linkShared: true })
+          }
           style={{
             flex: 1,
             height: 46,
@@ -490,7 +493,7 @@ function SubmittedSheet() {
         기한 전까지 이 링크에서 수정할 수 있어요
       </div>
       <button
-        onClick={() => set((st) => ({ screen: 's5', sheet: null, responded: Math.max(st.responded, 5) }))}
+        onClick={() => set((st) => ({ attendeeScreen: 's5att', sheet: null, responded: Math.max(st.responded, 5) }))}
         style={{
           marginTop: 16,
           width: '100%',

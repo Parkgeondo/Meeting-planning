@@ -3,7 +3,7 @@ import { color } from '../tokens'
 import { CTA } from '../components/ui'
 
 export function Share() {
-  const { state, set, go } = useStore()
+  const { state, set } = useStore()
   const s = state
 
   const copy = () => {
@@ -95,7 +95,7 @@ export function Share() {
       </div>
 
       <CTA
-        onClick={() => go('s4pre')}
+        onClick={() => set({ linkShared: true, attendeeScreen: 's4kakao' })}
         bg={color.kakao}
         fg={color.textPrimary}
         style={{ marginTop: 'auto', width: '100%' }}
@@ -103,7 +103,7 @@ export function Share() {
         카카오톡으로 공유
       </CTA>
       <button
-        onClick={() => go('s4pre')}
+        onClick={() => set({ linkShared: true, attendeeScreen: 's4kakao' })}
         style={{
           marginTop: 10,
           height: 40,
@@ -116,7 +116,7 @@ export function Share() {
           fontFamily: 'inherit',
         }}
       >
-        참석자 화면 미리보기 →
+        참석자 카톡 미리보기 →
       </button>
     </div>
   )

@@ -25,11 +25,11 @@ function Confetti() {
   )
 }
 
-export function Status() {
+export function Status({ view }: { view: 'org' | 'att' }) {
   const { state, set, names } = useStore()
   const s = state
   const jisooOpt = s.orgObjection === 'accepted'
-  const isOrg = s.statusView === 'org'
+  const isOrg = view === 'org'
 
   const finalDate = s.reRec ? '7월 9일 목요일' : '7월 7일 화요일'
   const finalTime = s.reRec ? '10:00 – 11:00' : '15:00 – 16:00'
@@ -101,7 +101,7 @@ export function Status() {
             기존 응답 데이터로 대안을 바로 추천할 수 있어요 — 재설문 없이요
           </div>
           <button
-            onClick={() => set({ reRec: true, confirmed: false, screen: 's6' })}
+            onClick={() => set({ reRec: true, confirmed: false, hostScreen: 's6' })}
             style={{
               marginTop: 10,
               width: '100%',
@@ -233,23 +233,6 @@ export function Status() {
           >
             캘린더에 추가
           </button>
-          <button
-            onClick={() => set({ bailed: true })}
-            style={{
-              height: 42,
-              border: 'none',
-              borderRadius: 14,
-              background: color.fill,
-              color: color.textTertiary,
-              fontSize: 14,
-              fontWeight: 700,
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-            }}
-          >
-            못 가게 됐어요
-          </button>
-          <div style={{ fontSize: 12, color: color.textDisabled, textAlign: 'center' }}>사유는 묻지 않아요</div>
         </div>
       )}
 

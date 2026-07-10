@@ -2,13 +2,13 @@ import { DAYS, HEAT_COLORS, HOURSX, LUNCH_HOUR, OBJ_CHIPS, PRESEED_OBJECTION, ba
 import { useStore } from '../state'
 import { avatarColor, color } from '../tokens'
 
-export function Dashboard() {
+export function Dashboard({ attendeeView = false }: { attendeeView?: boolean }) {
   const { state, set, go, names } = useStore()
   const s = state
   const jisooOpt = s.orgObjection === 'accepted'
 
   const showObjCard =
-    s.orgObjection === 'pending' && (PRESEED_OBJECTION || s.objSentByMe)
+    !attendeeView && s.orgObjection === 'pending' && (PRESEED_OBJECTION || s.objSentByMe)
   const showObjResult = s.orgObjection !== 'pending'
   const objReason = s.objChip !== null ? OBJ_CHIPS[s.objChip] : s.objText.trim() || OBJ_CHIPS[0]
   const objResultMsg =
@@ -205,14 +205,16 @@ export function Dashboard() {
                 return (
                   <div
                     key={di}
-                    onClick={() =>
-                      set({ sheet: 'cell', cellSel: { dl, hr: h, locked, heat: baseHeat(di, hi) } })
+                    onClick={
+                      attendeeView
+                        ? undefined
+                        : () => set({ sheet: 'cell', cellSel: { dl, hr: h, locked, heat: baseHeat(di, hi) } })
                     }
                     style={{
                       flex: 1,
                       height: 34,
                       borderRadius: 9,
-                      cursor: 'pointer',
+                      cursor: attendeeView ? 'default' : 'pointer',
                       boxSizing: 'border-box',
                       display: 'flex',
                       alignItems: 'center',
@@ -240,25 +242,27 @@ export function Dashboard() {
         </div>
       </div>
 
-      <button
-        onClick={() => canRec && go('s6')}
-        style={{
-          marginTop: 'auto',
-          height: 56,
-          border: 'none',
-          borderRadius: 16,
-          fontFamily: 'inherit',
-          fontSize: 17,
-          fontWeight: 700,
-          flex: 'none',
-          cursor: canRec ? 'pointer' : 'default',
-          background: canRec ? color.primary : '#DEE3E8',
-          color: canRec ? '#fff' : color.textQuaternary,
-          transition: 'all .2s',
-        }}
-      >
-        {canRec ? '추천 시간 보기' : '3명 이상 응답하면 추천해드려요'}
-      </button>
+      {!attendeeView && (
+        <button
+          onClick={() => canRec && go('s6')}
+          style={{
+            marginTop: 'auto',
+            height: 56,
+            border: 'none',
+            borderRadius: 16,
+            fontFamily: 'inherit',
+            fontSize: 17,
+            fontWeight: 700,
+            flex: 'none',
+            cursor: canRec ? 'pointer' : 'default',
+            background: canRec ? color.primary : '#DEE3E8',
+            color: canRec ? '#fff' : color.textQuaternary,
+            transition: 'all .2s',
+          }}
+        >
+          {canRec ? '추천 시간 보기' : '3명 이상 응답하면 추천해드려요'}
+        </button>
+      )}
     </div>
   )
 }
