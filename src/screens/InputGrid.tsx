@@ -183,7 +183,7 @@ export function InputGrid() {
         <div style={{ marginTop: 16, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: 20, fontWeight: 800, color: color.textPrimary, letterSpacing: '-.01em' }}>
-              되긴 하지만, 아쉬운 시간은요?
+              되긴 하지만, 피하고 싶은 시간은요?
             </div>
             <div style={{ fontSize: 13, color: color.textTertiary, marginTop: 4 }}>
               '되긴 해요'로 칠해두면 그 시간을 피해서 잡혀요
