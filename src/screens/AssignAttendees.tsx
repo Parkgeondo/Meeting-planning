@@ -33,6 +33,26 @@ export function AssignAttendees() {
     }))
   }
 
+  const removeName = (name: string) => {
+    if (names.length <= 1) return
+
+    set((st) => {
+      const nextExtra = st.extra.filter((n) => n !== name)
+      const nextRemoved =
+        st.extra.includes(name) || st.removed.includes(name) ? st.removed : st.removed.concat(name)
+      const nextRoles = { ...st.roles }
+      delete nextRoles[name]
+      const remaining = names.filter((n) => n !== name)
+      return {
+        extra: nextExtra,
+        removed: nextRemoved,
+        roles: nextRoles,
+        who: st.who === name ? remaining[0] ?? st.who : st.who,
+        optOutBy: st.optOutBy === name ? null : st.optOutBy,
+      }
+    })
+  }
+
   const reqCount = names.filter((n) => s.roles[n] === '필수').length
 
   return (
@@ -69,7 +89,7 @@ export function AssignAttendees() {
         </div>
       </div>
       <div style={{ fontSize: 14, color: color.textTertiary, marginTop: 6, lineHeight: 1.5 }}>
-        지정이 확실하지 않아도 괜찮아요 — 초안이에요
+        회의 시간을 의논하고 싶은 사람을 추가해주세요.
       </div>
 
       <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
@@ -162,6 +182,28 @@ export function AssignAttendees() {
                   선택
                 </button>
               </div>
+              <button
+                onClick={() => removeName(n)}
+                disabled={names.length <= 1}
+                aria-label={`${n} 삭제`}
+                style={{
+                  width: 28,
+                  height: 28,
+                  border: 'none',
+                  borderRadius: 8,
+                  background: 'transparent',
+                  color: names.length <= 1 ? color.borderDashed : color.textQuaternary,
+                  fontSize: 18,
+                  fontWeight: 700,
+                  cursor: names.length <= 1 ? 'default' : 'pointer',
+                  fontFamily: 'inherit',
+                  padding: 0,
+                  flex: 'none',
+                  lineHeight: 1,
+                }}
+              >
+                ×
+              </button>
             </div>
           )
         })}

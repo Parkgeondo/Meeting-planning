@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { DAY_NAMES, OBJ_CHIPS } from '../data'
+import { DAY_NAMES } from '../data'
 import {
   MAX_MONTH,
   MIN_MONTH,
@@ -9,7 +9,7 @@ import {
   toggleDates,
 } from '../range'
 import { useStore } from '../state'
-import { color } from '../tokens'
+import { avatarColor, color } from '../tokens'
 import { BottomSheet } from './Sheet'
 import { Toggle } from './ui'
 
@@ -80,8 +80,6 @@ const ghostFull: CSSProperties = {
   fontFamily: 'inherit',
 }
 
-const peekNote: CSSProperties = { fontSize: 11.5, color: color.textDisabled, textAlign: 'center' }
-
 /** ④ 역할 시트 — 필수 참석자: 비공개 이의(사유 칩/직접입력) 채널. */
 function RoleReqSheet() {
   const { state, set } = useStore()
@@ -89,23 +87,7 @@ function RoleReqSheet() {
   const close = useCloseSheet()
   const who = s.who
   const agendaShown = s.agenda || s.title
-  const objReady = s.objChip !== null || s.objText.trim().length > 0
-
-  const chipStyle = (i: number): CSSProperties => ({
-    width: '100%',
-    textAlign: 'left',
-    height: 44,
-    padding: '0 14px',
-    borderRadius: 12,
-    cursor: 'pointer',
-    fontFamily: 'inherit',
-    fontSize: 13.5,
-    fontWeight: 600,
-    border: s.objChip === i ? `1.5px solid ${color.primary}` : `1.5px solid ${color.border}`,
-    background: s.objChip === i ? color.primaryLight : '#fff',
-    color: s.objChip === i ? color.primaryDeep : color.textSecondary,
-    transition: 'all .15s',
-  })
+  const objReady = s.objText.trim().length > 0
 
   return (
     <BottomSheet onClose={close}>
@@ -122,19 +104,9 @@ function RoleReqSheet() {
             조용히 알릴 수 있어요. 다른 참석자에게는 보이지 않아요.
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginTop: 16 }}>
-            {OBJ_CHIPS.map((label, i) => (
-              <button
-                key={label}
-                onClick={() => set((st) => ({ objChip: st.objChip === i ? null : i }))}
-                style={chipStyle(i)}
-              >
-                {label}
-              </button>
-            ))}
             <input
               value={s.objText}
-              onChange={(e) => set({ objText: e.target.value })}
-              onFocus={() => set({ objChip: null })}
+              onChange={(e) => set({ objText: e.target.value, objChip: null })}
               placeholder="예: 이번 안건은 지난 회의에서 이미 공유받았어요"
               style={{
                 width: '100%',
@@ -174,7 +146,6 @@ function RoleReqSheet() {
           <button onClick={close} style={ghostFull}>
             괜찮아요, 닫기
           </button>
-          <div style={peekNote}>열어보기만 한 건 어디에도 기록되지 않아요</div>
         </>
       ) : (
         <>
@@ -264,7 +235,6 @@ function RoleOptSheet() {
           <button onClick={close} style={ghostFull}>
             괜찮아요, 닫기
           </button>
-          <div style={peekNote}>열어보기만 한 건 어디에도 기록되지 않아요</div>
         </>
       ) : (
         <>
@@ -368,26 +338,136 @@ function CellSheet() {
   const cs = state.cellSel
   const close = () => set({ sheet: null })
 
-  let title = ''
-  let body = ''
-  if (cs) {
-    title = `${cs.dl} ${cs.hr}:00 – ${cs.hr + 1}:00`
-    if (cs.locked) body = '필수 참석자가 어려운 시간이에요.'
-    else {
-      const soso = Math.max(0, Math.round((1 - cs.heat) * 2))
-      body =
-        `✅ ${state.responded}명 모두 가능` +
-        (soso > 0 ? ` · 🟡 ${soso}명은 선호하지 않아요` : " · 아무도 '되긴 해요'를 고르지 않았어요")
-    }
+  if (!cs) return null
+
+  const title = `${cs.dl} ${cs.hr}:00 – ${cs.hr + 1}:00`
+  const blockedBy = cs.blockedBy ?? []
+
+  if (cs.locked) {
+    return (
+      <BottomSheet onClose={close}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 9,
+              background: color.fill,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 14,
+              flex: 'none',
+            }}
+          >
+            🔒
+          </div>
+          <div style={{ fontSize: 19, fontWeight: 800, color: color.textPrimary, letterSpacing: '-.01em' }}>
+            {title}
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: 14,
+            background: '#FFF6F3',
+            border: '1.5px solid #FFD8CC',
+            borderRadius: 16,
+            padding: '14px 14px 12px',
+          }}
+        >
+          <div style={{ fontSize: 12, fontWeight: 800, color: color.heart, letterSpacing: '-.01em' }}>
+            후보에서 제외된 시간
+          </div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: color.textPrimary, marginTop: 6, lineHeight: 1.5 }}>
+            필수 참석자 {blockedBy.length}명이 어려운 시간이에요
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
+            {blockedBy.map((name, i) => (
+              <div
+                key={name}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  background: '#fff',
+                  borderRadius: 12,
+                  padding: '10px 12px',
+                }}
+              >
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    background: avatarColor(name, i),
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    flex: 'none',
+                  }}
+                >
+                  {name[0]}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14.5, fontWeight: 700, color: color.textPrimary }}>{name}</div>
+                  <div style={{ fontSize: 12, color: color.textQuaternary, marginTop: 2, fontWeight: 600 }}>
+                    필수 · 이 시간 불가
+                  </div>
+                </div>
+                <div
+                  style={{
+                    fontSize: 11.5,
+                    fontWeight: 800,
+                    color: color.heart,
+                    background: color.heartLight,
+                    borderRadius: 10,
+                    padding: '4px 8px',
+                    flex: 'none',
+                  }}
+                >
+                  불가
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ fontSize: 12.5, color: color.textQuaternary, marginTop: 12, lineHeight: 1.5, fontWeight: 600 }}>
+          필수 참석자가 모두 가능한 시간만 추천 후보에 올라가요
+        </div>
+
+        <button
+          onClick={close}
+          style={{
+            marginTop: 16,
+            width: '100%',
+            height: 48,
+            border: 'none',
+            borderRadius: 14,
+            background: color.fill,
+            color: color.textSecondary,
+            fontSize: 15,
+            fontWeight: 700,
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+          }}
+        >
+          닫기
+        </button>
+      </BottomSheet>
+    )
   }
+
+  const body = `✅ ${state.responded}명 모두 가능`
 
   return (
     <BottomSheet onClose={close}>
       <div style={{ fontSize: 19, fontWeight: 800, color: color.textPrimary }}>{title}</div>
       <div style={{ fontSize: 14.5, color: color.textSecondary, marginTop: 10, lineHeight: 1.7 }}>{body}</div>
-      <div style={{ fontSize: 12, color: color.textDisabled, marginTop: 10 }}>
-        집계만 보여요 · 명단은 누구에게도 보이지 않아요
-      </div>
       <button
         onClick={close}
         style={{

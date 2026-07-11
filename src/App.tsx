@@ -138,7 +138,7 @@ function FrameSheets({ role }: { role: 'host' | 'attendee' }) {
 
 function PhoneFrame({
   label,
-  nav,
+  nav: _nav,
   children,
   sheetsRole,
 }: {
@@ -150,7 +150,7 @@ function PhoneFrame({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
       <div style={{ fontSize: 13, fontWeight: 800, color: color.textSecondary, letterSpacing: '-.01em' }}>{label}</div>
-      {/* {nav} */}
+      {/* {_nav} */}
       <div
         style={{
           width: 375,

@@ -1,4 +1,4 @@
-import { DAYS, HEAT_COLORS, HOURSX, LUNCH_HOUR, OBJ_CHIPS, PRESEED_OBJECTION, baseHeat, isLocked } from '../data'
+import { DAYS, HEAT_COLORS, HOURSX, LUNCH_HOUR, OBJ_CHIPS, PRESEED_OBJECTION, baseHeat, isLocked, lockedAttendees } from '../data'
 import { useStore } from '../state'
 import { avatarColor, color } from '../tokens'
 
@@ -10,7 +10,7 @@ export function Dashboard({ attendeeView = false }: { attendeeView?: boolean }) 
   const showObjCard =
     !attendeeView && s.orgObjection === 'pending' && (PRESEED_OBJECTION || s.objSentByMe)
   const showObjResult = s.orgObjection !== 'pending'
-  const objReason = s.objChip !== null ? OBJ_CHIPS[s.objChip] : s.objText.trim() || OBJ_CHIPS[0]
+  const objReason = (s.objChip !== null ? OBJ_CHIPS[s.objChip] : null) || s.objText.trim() || '참석 필요성에 대한 의견'
   const objResultMsg =
     s.orgObjection === 'accepted'
       ? '지수님을 선택 참석으로 변경했어요 · 그룹에는 알리지 않아요 · 히트맵이 다시 계산됐어요'
@@ -200,6 +200,7 @@ export function Dashboard({ attendeeView = false }: { attendeeView?: boolean }) 
                   )
                 }
                 const locked = isLocked(di, hi, jisooOpt)
+                const blockedBy = lockedAttendees(di, hi, jisooOpt)
                 const heat = baseHeat(di, hi) * (s.responded / 6)
                 const lvl = Math.min(4, Math.floor(heat * 5))
                 return (
@@ -208,7 +209,11 @@ export function Dashboard({ attendeeView = false }: { attendeeView?: boolean }) 
                     onClick={
                       attendeeView
                         ? undefined
-                        : () => set({ sheet: 'cell', cellSel: { dl, hr: h, locked, heat: baseHeat(di, hi) } })
+                        : () =>
+                            set({
+                              sheet: 'cell',
+                              cellSel: { dl, hr: h, locked, heat: baseHeat(di, hi), blockedBy },
+                            })
                     }
                     style={{
                       flex: 1,

@@ -38,9 +38,7 @@ export function WhoAreYou() {
         누구로 응답하시나요?
       </div>
       <div style={{ fontSize: 14.5, color: color.textTertiary, marginTop: 6, lineHeight: 1.5 }}>
-        이름만 고르면 바로 시작돼요 —
-        <br />
-        시간 응답은 익명으로 집계돼요
+        하단의 참가자 리스트 중에서 본인의 이름을 선택해주세요.
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 22 }}>

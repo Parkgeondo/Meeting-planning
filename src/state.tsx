@@ -59,6 +59,8 @@ export interface CellSel {
   hr: number
   locked: boolean
   heat: number
+  /** 필수 참석자 중 이 시간에 어려운 사람 (더미 1–2명). */
+  blockedBy: string[]
 }
 
 export interface AppState {
@@ -73,6 +75,8 @@ export interface AppState {
   range: RangeState
   roles: Record<string, Role>
   extra: string[]
+  /** Base roster names removed from the meeting. */
+  removed: string[]
   who: string
   addVal: string
   /** ④ STEP 1/2 attendee input. */
@@ -113,6 +117,7 @@ const initialState: AppState = {
   range: { week: '다음 주', days: [true, true, true, true, true], start: 10, end: 18, dates: [], month: 7 },
   roles: { 지민: '필수', 서연: '필수', 준호: '필수', 지수: '필수', 하늘: '선택', 도윤: '선택' },
   extra: [],
+  removed: [],
   who: '지수',
   addVal: '',
   xStep: 1,
@@ -176,7 +181,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           sheet: null,
           ...applyScreenNav(s, screen, screen === 's7' ? 'org' : undefined),
         })),
-      names: BASE_NAMES.concat(state.extra),
+      names: BASE_NAMES.filter((n) => !state.removed.includes(n)).concat(state.extra),
     }
   }, [state])
 
