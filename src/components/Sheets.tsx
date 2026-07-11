@@ -335,11 +335,11 @@ function InfoSheet() {
     <BottomSheet onClose={close}>
       <div style={{ fontSize: 17, fontWeight: 800, color: color.textPrimary }}>필수와 선택, 뭐가 다른가요?</div>
       <div style={{ fontSize: 14, color: color.textSecondary, marginTop: 12, lineHeight: 1.7 }}>
-        필수 참석자가 안 되는 시간은 후보에서 제외돼요. 선택 참석자의 시간은 참고로 반영돼요.
+        필수 참석자가 안 되는 시간은 후보에서 제외돼요. <br/>선택 참석자의 시간은 참고로 반영돼요.
         <br />
         <br />
-        <b style={{ color: color.textPrimary }}>지정이 확실하지 않아도 괜찮아요</b> — 참석자가 다르게 생각하면
-        주최자님에게만 조용히 의견을 보낼 수 있어요.
+        {/* <b style={{ color: color.textPrimary }}>지정이 확실하지 않아도 괜찮아요</b> — 참석자가 다르게 생각하면
+        주최자님에게만 조용히 의견을 보낼 수 있어요. */}
       </div>
       <button
         onClick={close}
@@ -521,7 +521,7 @@ function RangeSheet() {
   const onDays = activeDays(r)
   const custom = r.week === '직접 선택'
   const calCells = buildCalendar(r, (days) => setRange({ dates: toggleDates(r, days) }))
-  const rangeNarrow = onDays.length <= 2
+  const rangeNarrow = custom ? r.dates.length > 0 && r.dates.length <= 2 : onDays.length <= 2
 
   const arrowStyle = (enabled: boolean): CSSProperties => ({
     width: 26,
@@ -619,6 +619,26 @@ function RangeSheet() {
         )}
       </div>
 
+      {rangeNarrow && (
+        <div
+          style={{
+            marginTop: 14,
+            background: '#FFF3D6',
+            borderRadius: 12,
+            padding: '11px 13px',
+            display: 'flex',
+            gap: 8,
+            alignItems: 'flex-start',
+            animation: 'popIn .25s ease both',
+          }}
+        >
+          <div style={{ fontSize: 13, lineHeight: 1.5 }}>⚠️</div>
+          <div style={{ fontSize: 12.5, color: '#8A6116', fontWeight: 600, lineHeight: 1.5 }}>
+            후보가 좁으면 모두가 괜찮은 시간을 찾기 어렵고, 누군가 못 오게 됐을 때 대안도 부족해져요
+          </div>
+        </div>
+      )}
+
       {custom && (
         <div style={{ marginTop: 14, background: color.fillLight, borderRadius: 14, padding: '12px 10px 10px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 6px 8px' }}>
@@ -705,59 +725,43 @@ function RangeSheet() {
         </div>
       )}
 
-      <div style={{ fontSize: 12.5, fontWeight: 600, color: color.textQuaternary, margin: '16px 0 8px' }}>요일</div>
-      <div style={{ display: 'flex', gap: 6 }}>
-        {DAY_NAMES.map((d, i) => {
-          const on = r.days[i]
-          return (
-            <button
-              key={d}
-              onClick={() => {
-                if (r.days[i] && onDays.length === 1) return
-                const days = r.days.slice()
-                days[i] = !days[i]
-                setRange({ days })
-              }}
-              style={{
-                flex: 1,
-                height: 38,
-                borderRadius: 11,
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                fontSize: 13,
-                fontWeight: 700,
-                padding: 0,
-                border: on ? `1.5px solid ${color.primary}` : `1.5px solid ${color.border}`,
-                background: on ? color.primary : '#fff',
-                color: on ? '#fff' : color.textQuaternary,
-                transition: 'all .15s',
-              }}
-            >
-              {d}
-            </button>
-          )
-        })}
-      </div>
-      <div style={{ fontSize: 12, color: color.textQuaternary, marginTop: 7 }}>안 되는 요일만 꺼주세요</div>
-
-      {rangeNarrow && (
-        <div
-          style={{
-            marginTop: 10,
-            background: '#FFF3D6',
-            borderRadius: 12,
-            padding: '11px 13px',
-            display: 'flex',
-            gap: 8,
-            alignItems: 'flex-start',
-            animation: 'popIn .25s ease both',
-          }}
-        >
-          <div style={{ fontSize: 13, lineHeight: 1.5 }}>⚠️</div>
-          <div style={{ fontSize: 12.5, color: '#8A6116', fontWeight: 600, lineHeight: 1.5 }}>
-            후보가 좁으면 모두가 괜찮은 시간을 찾기 어렵고, 누군가 못 오게 됐을 때 대안도 부족해져요
+      {!custom && (
+        <>
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: color.textQuaternary, margin: '16px 0 8px' }}>요일</div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {DAY_NAMES.map((d, i) => {
+              const on = r.days[i]
+              return (
+                <button
+                  key={d}
+                  onClick={() => {
+                    if (r.days[i] && onDays.length === 1) return
+                    const days = r.days.slice()
+                    days[i] = !days[i]
+                    setRange({ days })
+                  }}
+                  style={{
+                    flex: 1,
+                    height: 38,
+                    borderRadius: 11,
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    padding: 0,
+                    border: on ? `1.5px solid ${color.primary}` : `1.5px solid ${color.border}`,
+                    background: on ? color.primary : '#fff',
+                    color: on ? '#fff' : color.textQuaternary,
+                    transition: 'all .15s',
+                  }}
+                >
+                  {d}
+                </button>
+              )
+            })}
           </div>
-        </div>
+          <div style={{ fontSize: 12, color: color.textQuaternary, marginTop: 7 }}>안 되는 요일만 꺼주세요</div>
+        </>
       )}
 
       <div style={{ fontSize: 12.5, fontWeight: 600, color: color.textQuaternary, margin: '16px 0 8px' }}>시간 범위</div>
