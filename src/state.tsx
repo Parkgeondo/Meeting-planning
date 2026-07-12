@@ -7,7 +7,36 @@ import {
 } from 'react'
 import { BASE_NAMES } from './data'
 
-export type Screen = 's1' | 's2' | 's3' | 's4pre' | 's4' | 's5' | 's6' | 's7'
+export type Screen = 's1' | 's2' | 's3' | 's4kakao' | 's4pre' | 's4' | 's5' | 's5att' | 's6' | 's7'
+export type HostScreen = 's1' | 's2' | 's3' | 's5' | 's6' | 's7'
+export type AttendeeScreen = 's4kakao' | 's4pre' | 's4' | 's5att' | 's7'
+
+const HOST_SCREENS = new Set<Screen>(['s1', 's2', 's3', 's5', 's6'])
+const ATTENDEE_SCREENS = new Set<Screen>(['s4kakao', 's4pre', 's4', 's5att'])
+
+function screenFlow(screen: Screen, statusView?: StatusView): 'host' | 'attendee' {
+  if (HOST_SCREENS.has(screen)) return 'host'
+  if (ATTENDEE_SCREENS.has(screen)) return 'attendee'
+  return statusView === 'org' ? 'host' : 'attendee'
+}
+
+function applyScreenNav(
+  s: AppState,
+  screen: Screen,
+  statusView?: StatusView,
+): Partial<AppState> {
+  const flow = screenFlow(screen, statusView ?? s.statusView)
+  if (flow === 'host') {
+    return {
+      hostScreen: screen as HostScreen,
+      statusView: screen === 's7' || statusView === 'org' ? 'org' : s.statusView,
+    }
+  }
+  return {
+    attendeeScreen: screen as AttendeeScreen,
+    statusView: screen === 's7' || statusView === 'att' ? 'att' : s.statusView,
+  }
+}
 export type Sheet = 'role' | 'info' | 'cell' | 'confirm' | 'submitted' | 'range' | null
 export type Role = '필수' | '선택'
 export type Week = '이번 주' | '다음 주' | '직접 선택'
@@ -30,10 +59,18 @@ export interface CellSel {
   hr: number
   locked: boolean
   heat: number
+  /** 필수 참석자 중 이 시간에 어려운 사람 (더미 1–2명). */
+  blockedBy: string[]
+  /** 선택 참석자 중 이 시간에 어려운 사람 (오렌지 점). */
+  optBlocked: string[]
 }
 
+/** ⑥ 추천 카드 라디오 선택. */
+export type RecSel = 'r1' | 'r2' | 'r3'
+
 export interface AppState {
-  screen: Screen
+  hostScreen: HostScreen
+  attendeeScreen: AttendeeScreen
   title: string
   agenda: string
   len: number
@@ -43,6 +80,8 @@ export interface AppState {
   range: RangeState
   roles: Record<string, Role>
   extra: string[]
+  /** Base roster names removed from the meeting. */
+  removed: string[]
   who: string
   addVal: string
   /** ④ STEP 1/2 attendee input. */
@@ -53,6 +92,12 @@ export interface AppState {
   xDrag: 'exclude' | 'restore' | 'soso' | 'unsoso' | null
   sheet: Sheet
   cellSel: CellSel | null
+  /** Which phone frame opened the cell sheet (⑤ host vs ⑤ attendee dashboard). */
+  cellFrom: 'host' | 'attendee'
+  /** ⑥ 추천 카드 라디오 선택. */
+  recSel: RecSel
+  /** Heatmap cell being pulse-highlighted (`di-hi`), cleared after 3.2s. */
+  hlCell: string | null
   /** Selected preset objection chip (필수 role sheet), or null. */
   objChip: number | null
   /** Free-text objection (필수 role sheet). */
@@ -67,10 +112,13 @@ export interface AppState {
   reRec: boolean
   statusView: StatusView
   copied: boolean
+  /** 주최자가 카카오톡으로 공유하면 참석자 채팅방에 링크가 표시됩니다. */
+  linkShared: boolean
 }
 
 const initialState: AppState = {
-  screen: 's1',
+  hostScreen: 's1',
+  attendeeScreen: 's4kakao',
   title: '6월 스프린트 회고',
   agenda: '회고 + 다음 스프린트 우선순위 결정',
   len: 60,
@@ -80,6 +128,7 @@ const initialState: AppState = {
   range: { week: '다음 주', days: [true, true, true, true, true], start: 10, end: 18, dates: [], month: 7 },
   roles: { 지민: '필수', 서연: '필수', 준호: '필수', 지수: '필수', 하늘: '선택', 도윤: '선택' },
   extra: [],
+  removed: [],
   who: '지수',
   addVal: '',
   xStep: 1,
@@ -88,6 +137,9 @@ const initialState: AppState = {
   xDrag: null,
   sheet: null,
   cellSel: null,
+  cellFrom: 'host',
+  recSel: 'r1',
+  hlCell: null,
   objChip: null,
   objText: '',
   objSentByMe: false,
@@ -99,12 +151,16 @@ const initialState: AppState = {
   reRec: false,
   statusView: 'att',
   copied: false,
+  linkShared: false,
 }
+
+/** Legacy `screen` in patches is routed to host/attendee navigation. */
+export type SetPatch = Partial<AppState> & { screen?: Screen }
 
 interface Store {
   state: AppState
   /** Shallow-merge a patch (object) or updater function into state. */
-  set: (patch: Partial<AppState> | ((s: AppState) => Partial<AppState> | null)) => void
+  set: (patch: SetPatch | ((s: AppState) => SetPatch | null)) => void
   /** Merge into `range`. */
   setRange: (patch: Partial<RangeState>) => void
   /** Navigate to a screen and close any open sheet. */
@@ -122,14 +178,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const set: Store['set'] = (patch) =>
       setState((s) => {
         const next = typeof patch === 'function' ? patch(s) : patch
-        return next ? { ...s, ...next } : s
+        if (!next) return s
+        if ('screen' in next && next.screen) {
+          const { screen, statusView, ...rest } = next as SetPatch & { screen: Screen }
+          return { ...s, ...rest, ...applyScreenNav(s, screen, statusView) }
+        }
+        return { ...s, ...next }
       })
     return {
       state,
       set,
       setRange: (patch) => setState((s) => ({ ...s, range: { ...s.range, ...patch } })),
-      go: (screen) => setState((s) => ({ ...s, screen, sheet: null })),
-      names: BASE_NAMES.concat(state.extra),
+      go: (screen) =>
+        setState((s) => ({
+          ...s,
+          sheet: null,
+          ...applyScreenNav(s, screen, screen === 's7' ? 'org' : undefined),
+        })),
+      names: BASE_NAMES.filter((n) => !state.removed.includes(n)).concat(state.extra),
     }
   }, [state])
 

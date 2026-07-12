@@ -1,6 +1,7 @@
 import { useStore } from '../state'
 import { color } from '../tokens'
 import { CTA } from '../components/ui'
+import checkBlueIcon from '../assets/check-blue.png'
 
 export function Share() {
   const { state, set, go } = useStore()
@@ -17,28 +18,22 @@ export function Share() {
         display: 'flex',
         flexDirection: 'column',
         flex: 1,
-        padding: '26px 22px 22px',
+        padding: '26px 15px 22px',
         alignItems: 'center',
         textAlign: 'center',
         animation: 'fadeUp .3s ease both',
       }}
     >
-      <div
+      <img
+        src={checkBlueIcon}
+        alt=""
+        width={88}
+        height={88}
         style={{
-          width: 88,
-          height: 88,
-          borderRadius: '50%',
-          background: '#EAF3FE',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 40,
           marginTop: 40,
           animation: 'popIn .4s cubic-bezier(.2,1.6,.4,1) both',
         }}
-      >
-        🔗
-      </div>
+      />
       <div
         style={{
           fontSize: 23,
@@ -95,7 +90,7 @@ export function Share() {
       </div>
 
       <CTA
-        onClick={() => go('s4pre')}
+        onClick={() => set({ linkShared: true, attendeeScreen: 's4kakao' })}
         bg={color.kakao}
         fg={color.textPrimary}
         style={{ marginTop: 'auto', width: '100%' }}
@@ -103,7 +98,7 @@ export function Share() {
         카카오톡으로 공유
       </CTA>
       <button
-        onClick={() => go('s4pre')}
+        onClick={() => go('s5')}
         style={{
           marginTop: 10,
           height: 40,
@@ -116,7 +111,7 @@ export function Share() {
           fontFamily: 'inherit',
         }}
       >
-        참석자 화면 미리보기 →
+        현재 집계 현황 보러가기 →
       </button>
     </div>
   )

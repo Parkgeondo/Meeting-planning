@@ -2,7 +2,7 @@ import { DEADLINE_BASE, DL_DAY_LABELS } from '../data'
 import { rangeSummary } from '../range'
 import { useStore } from '../state'
 import { color } from '../tokens'
-import { CTA, SectionLabel, SelChip, Toggle } from '../components/ui'
+import { CTA, Collapse, SectionLabel, SelChip, Toggle } from '../components/ui'
 
 const LEN_CHIPS: [number, string][] = [
   [30, '30분'],
@@ -41,7 +41,7 @@ export function CreateMeeting() {
         display: 'flex',
         flexDirection: 'column',
         flex: 1,
-        padding: '26px 22px 22px',
+        padding: '26px 15px 22px',
         animation: 'fadeUp .3s ease both',
       }}
     >
@@ -64,7 +64,7 @@ export function CreateMeeting() {
         placeholder="회고 + 다음 스프린트 우선순위 결정"
         style={{ ...fieldInput, fontSize: 15 }}
       />
-      <div style={{ fontSize: 12.5, color: color.textQuaternary, marginTop: 7, lineHeight: 1.5 }}>
+      <div style={{ fontSize: 12.5, color: color.textQuaternary, marginTop: 7, lineHeight: 1.5, padding: '0 2px' }}>
         안건이 있으면 참석자가 자신의 참석 필요성을 판단할 수 있어요
       </div>
 
@@ -109,7 +109,7 @@ export function CreateMeeting() {
           <Toggle on={s.lunchOff} onClick={() => set({ lunchOff: !s.lunchOff })} />
         </div>
       </div>
-      <div style={{ fontSize: 12, color: color.textQuaternary, marginTop: 7 }}>
+      <div style={{ fontSize: 12, color: color.textQuaternary, marginTop: 7, padding: '0 2px' }}>
         범위가 넓을수록 모두가 괜찮은 시간을 찾기 쉬워요
       </div>
 
@@ -119,7 +119,7 @@ export function CreateMeeting() {
           <SelChip key={d} label={d} active={s.deadline === d} onClick={() => set({ deadline: d })} />
         ))}
       </div>
-      {s.deadline === '직접 설정' && (
+      <Collapse open={s.deadline === '직접 설정'}>
         <div
           style={{
             marginTop: 8,
@@ -129,7 +129,6 @@ export function CreateMeeting() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            animation: 'popIn .2s ease both',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -149,7 +148,7 @@ export function CreateMeeting() {
           </div>
           <div style={{ fontSize: 12, color: color.textQuaternary, fontWeight: 600 }}>{dueLabel}</div>
         </div>
-      )}
+      </Collapse>
 
       <CTA onClick={() => go('s2')} style={{ marginTop: 'auto' }}>
         참석자 정하기

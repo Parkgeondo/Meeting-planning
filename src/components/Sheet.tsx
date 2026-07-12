@@ -1,4 +1,7 @@
-import type { ReactNode } from 'react'
+import { createContext, useContext, type ReactNode } from 'react'
+
+/** True while the sheet is playing its exit animation (two-phase close). */
+export const SheetClosingContext = createContext(false)
 
 /** Bottom sheet shell: dim backdrop + rounded panel sliding up from the bottom. */
 export function BottomSheet({
@@ -11,33 +14,44 @@ export function BottomSheet({
   /** Render as a centered dialog card instead of a bottom-anchored sheet. */
   center?: boolean
 }) {
+  const closing = useContext(SheetClosingContext)
   return (
-    <div style={{ position: 'absolute', inset: 0, zIndex: 10 }}>
+    <div style={{ position: 'absolute', inset: 0, zIndex: 10, pointerEvents: closing ? 'none' : 'auto' }}>
       <div
         onClick={onClose}
         style={{
           position: 'absolute',
           inset: 0,
           background: 'rgba(25,31,40,.45)',
-          animation: 'dimIn .2s ease both',
+          animation: closing ? 'dimOut .24s ease both' : 'dimIn .2s ease both',
         }}
       />
       {center ? (
+        // transform 센터링은 등장 애니메이션과 충돌하므로 flex 래퍼로 센터링.
         <div
           style={{
             position: 'absolute',
-            left: 24,
-            right: 24,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            background: '#fff',
-            borderRadius: 20,
-            padding: '24px 22px',
-            animation: 'popIn .25s ease both',
-            textAlign: 'center',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0 24px',
+            pointerEvents: 'none',
           }}
         >
-          {children}
+          <div
+            style={{
+              width: '100%',
+              background: '#fff',
+              borderRadius: 20,
+              padding: '24px 22px',
+              animation: closing ? 'popOutC .2s ease both' : 'popIn .25s ease both',
+              textAlign: 'center',
+              pointerEvents: closing ? 'none' : 'auto',
+            }}
+          >
+            {children}
+          </div>
         </div>
       ) : (
         <div
@@ -49,7 +63,9 @@ export function BottomSheet({
             background: '#fff',
             borderRadius: '24px 24px 0 0',
             padding: '22px 22px 26px',
-            animation: 'sheetUp .28s cubic-bezier(.2,.9,.3,1) both',
+            animation: closing
+              ? 'sheetDown .26s cubic-bezier(.2,.9,.3,1) both'
+              : 'sheetUp .28s cubic-bezier(.2,.9,.3,1) both',
           }}
         >
           <div

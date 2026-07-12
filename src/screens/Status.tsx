@@ -1,3 +1,4 @@
+import { selectedRec } from '../data'
 import { useStore } from '../state'
 import { avatarColor, color } from '../tokens'
 
@@ -25,14 +26,15 @@ function Confetti() {
   )
 }
 
-export function Status() {
+export function Status({ view }: { view: 'org' | 'att' }) {
   const { state, set, names } = useStore()
   const s = state
   const jisooOpt = s.orgObjection === 'accepted'
-  const isOrg = s.statusView === 'org'
+  const isOrg = view === 'org'
 
-  const finalDate = s.reRec ? '7월 9일 목요일' : '7월 7일 화요일'
-  const finalTime = s.reRec ? '10:00 – 11:00' : '15:00 – 16:00'
+  const finalRec = selectedRec(s.reRec, s.recSel)
+  const finalDate = finalRec.date
+  const finalTime = finalRec.range
 
   return (
     <div
@@ -40,7 +42,7 @@ export function Status() {
         display: 'flex',
         flexDirection: 'column',
         flex: 1,
-        padding: '24px 22px 22px',
+        padding: '26px 15px 22px',
         animation: 'fadeUp .3s ease both',
         position: 'relative',
       }}
@@ -101,7 +103,7 @@ export function Status() {
             기존 응답 데이터로 대안을 바로 추천할 수 있어요 — 재설문 없이요
           </div>
           <button
-            onClick={() => set({ reRec: true, confirmed: false, screen: 's6' })}
+            onClick={() => set({ reRec: true, confirmed: false, recSel: 'r1', hostScreen: 's6' })}
             style={{
               marginTop: 10,
               width: '100%',
@@ -233,23 +235,6 @@ export function Status() {
           >
             캘린더에 추가
           </button>
-          <button
-            onClick={() => set({ bailed: true })}
-            style={{
-              height: 42,
-              border: 'none',
-              borderRadius: 14,
-              background: color.fill,
-              color: color.textTertiary,
-              fontSize: 14,
-              fontWeight: 700,
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-            }}
-          >
-            못 가게 됐어요
-          </button>
-          <div style={{ fontSize: 12, color: color.textDisabled, textAlign: 'center' }}>사유는 묻지 않아요</div>
         </div>
       )}
 
@@ -269,6 +254,21 @@ export function Status() {
             }}
           >
             캘린더에 추가
+          </button>
+          <button
+            onClick={() => set({ confirmed: false, hostScreen: 's6' })}
+            style={{
+              height: 42,
+              border: 'none',
+              background: 'none',
+              color: color.textQuaternary,
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+            }}
+          >
+            ← 추천 시간 다시 보기
           </button>
         </div>
       )}

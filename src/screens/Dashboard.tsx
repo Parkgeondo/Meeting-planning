@@ -1,16 +1,27 @@
-import { DAYS, HEAT_COLORS, HOURSX, LUNCH_HOUR, OBJ_CHIPS, PRESEED_OBJECTION, baseHeat, isLocked } from '../data'
+import { useEffect } from 'react'
+import { DAYS, HEAT_COLORS, HOURSX, LUNCH_HOUR, OBJ_CHIPS, PRESEED_OBJECTION, baseHeat, isLocked, lockedAttendees, optBlockedAttendees } from '../data'
 import { useStore } from '../state'
 import { avatarColor, color } from '../tokens'
+import lockIcon from '../assets/lock.png'
+import bubbleIcon from '../assets/bubble.png'
 
-export function Dashboard() {
+export function Dashboard({ attendeeView = false }: { attendeeView?: boolean }) {
   const { state, set, go, names } = useStore()
   const s = state
   const jisooOpt = s.orgObjection === 'accepted'
 
+  // ⑥ "시간 보기"로 진입한 셀을 3회 펄스 후 페이드아웃.
+  useEffect(() => {
+    if (!s.hlCell) return
+    const t = setTimeout(() => set({ hlCell: null }), 3200)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [s.hlCell])
+
   const showObjCard =
-    s.orgObjection === 'pending' && (PRESEED_OBJECTION || s.objSentByMe)
+    !attendeeView && s.orgObjection === 'pending' && (PRESEED_OBJECTION || s.objSentByMe)
   const showObjResult = s.orgObjection !== 'pending'
-  const objReason = s.objChip !== null ? OBJ_CHIPS[s.objChip] : s.objText.trim() || OBJ_CHIPS[0]
+  const objReason = (s.objChip !== null ? OBJ_CHIPS[s.objChip] : null) || s.objText.trim() || '참석 필요성에 대한 의견'
   const objResultMsg =
     s.orgObjection === 'accepted'
       ? '지수님을 선택 참석으로 변경했어요 · 그룹에는 알리지 않아요 · 히트맵이 다시 계산됐어요'
@@ -25,14 +36,14 @@ export function Dashboard() {
         display: 'flex',
         flexDirection: 'column',
         flex: 1,
-        padding: '22px 18px 18px',
+        padding: '26px 15px 22px',
         animation: 'fadeUp .3s ease both',
       }}
     >
       <div style={{ fontSize: 19, fontWeight: 800, color: color.textPrimary, letterSpacing: '-.01em' }}>
         {s.title}
       </div>
-      <div style={{ fontSize: 12.5, color: color.textQuaternary, marginTop: 3 }}>
+      <div style={{ fontSize: 12.5, color: color.textQuaternary, marginTop: 3, padding: '0 2px' }}>
         {s.responded}/6명 응답 · 기한까지 26시간
       </div>
 
@@ -40,15 +51,15 @@ export function Dashboard() {
         <div
           style={{
             marginTop: 12,
-            background: '#FFF8EC',
-            border: '1.5px solid #FFE2B0',
+            background: '#F2F4F6',
             borderRadius: 16,
             padding: 14,
             animation: 'popIn .3s ease both',
           }}
         >
-          <div style={{ fontSize: 13.5, fontWeight: 700, color: color.textPrimary, lineHeight: 1.5 }}>
-            💬 지수님이 참석 필요성에 대해 의견을 보냈어요
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, fontWeight: 700, color: color.textPrimary, lineHeight: 1.5 }}>
+            <img src={bubbleIcon} alt="" width={16} height={16} style={{ flex: 'none' }} />
+            지수님이 참석 필요성에 대해 의견을 보냈어요
           </div>
           <div style={{ fontSize: 13, color: color.textTertiary, marginTop: 4 }}>"{objReason}"</div>
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
@@ -200,15 +211,23 @@ export function Dashboard() {
                   )
                 }
                 const locked = isLocked(di, hi, jisooOpt)
+                const blockedBy = lockedAttendees(di, hi, jisooOpt)
+                const optBlocked = optBlockedAttendees(di, hi)
                 const heat = baseHeat(di, hi) * (s.responded / 6)
                 const lvl = Math.min(4, Math.floor(heat * 5))
+                const hl = s.hlCell === `${di}-${hi}`
                 return (
                   <div
                     key={di}
                     onClick={() =>
-                      set({ sheet: 'cell', cellSel: { dl, hr: h, locked, heat: baseHeat(di, hi) } })
+                      set({
+                        sheet: 'cell',
+                        cellFrom: attendeeView ? 'attendee' : 'host',
+                        cellSel: { dl, hr: h, locked, heat: baseHeat(di, hi), blockedBy, optBlocked },
+                      })
                     }
                     style={{
+                      position: 'relative',
                       flex: 1,
                       height: 34,
                       borderRadius: 9,
@@ -220,10 +239,27 @@ export function Dashboard() {
                       fontSize: 11,
                       background: locked ? color.canvas : HEAT_COLORS[lvl],
                       opacity: locked ? 0.8 : 1,
-                      transition: 'background .5s, opacity .5s',
+                      boxShadow: `0 0 0 2.5px rgba(255,149,0,${hl ? 1 : 0})`,
+                      animation: hl ? 'hlPulse 1s ease-in-out 3' : undefined,
+                      zIndex: hl ? 1 : 'auto',
+                      transition: 'background .5s, opacity .5s, box-shadow .9s ease',
                     }}
                   >
-                    {locked ? '🔒' : ''}
+                    {locked && <img src={lockIcon} alt="필수 참가자 불가" width={15} height={15} />}
+                    {!locked && optBlocked.length > 0 && (
+                      <span
+                        style={{
+                          position: 'absolute',
+                          top: 4,
+                          right: 4,
+                          width: 6,
+                          height: 6,
+                          borderRadius: '50%',
+                          background: '#FF9500',
+                          boxShadow: '0 0 0 1.5px rgba(255,255,255,.75)',
+                        }}
+                      />
+                    )}
                   </div>
                 )
               })}
@@ -236,29 +272,64 @@ export function Dashboard() {
             <div key={c} style={{ width: 14, height: 10, borderRadius: 3, background: c }} />
           ))}
           <span style={{ fontSize: 11, color: color.textQuaternary }}>선호 높음</span>
-          <span style={{ fontSize: 11, color: color.textDisabled, marginLeft: 8 }}>🔒 필수 불가</span>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              fontSize: 11,
+              color: color.textDisabled,
+              marginLeft: 8,
+            }}
+          >
+            <img src={lockIcon} alt="" width={12} height={12} />
+            필수 참가자 불가
+          </span>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              fontSize: 11,
+              color: color.textDisabled,
+              marginLeft: 4,
+            }}
+          >
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                background: '#FF9500',
+                display: 'inline-block',
+              }}
+            />
+            선택 불가
+          </span>
         </div>
       </div>
 
-      <button
-        onClick={() => canRec && go('s6')}
-        style={{
-          marginTop: 'auto',
-          height: 56,
-          border: 'none',
-          borderRadius: 16,
-          fontFamily: 'inherit',
-          fontSize: 17,
-          fontWeight: 700,
-          flex: 'none',
-          cursor: canRec ? 'pointer' : 'default',
-          background: canRec ? color.primary : '#DEE3E8',
-          color: canRec ? '#fff' : color.textQuaternary,
-          transition: 'all .2s',
-        }}
-      >
-        {canRec ? '추천 시간 보기' : '3명 이상 응답하면 추천해드려요'}
-      </button>
+      {!attendeeView && (
+        <button
+          onClick={() => canRec && go('s6')}
+          style={{
+            marginTop: 'auto',
+            height: 56,
+            border: 'none',
+            borderRadius: 16,
+            fontFamily: 'inherit',
+            fontSize: 17,
+            fontWeight: 700,
+            flex: 'none',
+            cursor: canRec ? 'pointer' : 'default',
+            background: canRec ? color.primary : '#DEE3E8',
+            color: canRec ? '#fff' : color.textQuaternary,
+            transition: 'all .2s',
+          }}
+        >
+          {canRec ? '추천 시간 보기' : '3명 이상 응답하면 추천해드려요'}
+        </button>
+      )}
     </div>
   )
 }

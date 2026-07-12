@@ -21,14 +21,14 @@ export function WhoAreYou() {
         display: 'flex',
         flexDirection: 'column',
         flex: 1,
-        padding: '28px 24px 24px',
+        padding: '26px 15px 22px',
         animation: 'fadeUp .3s ease both',
       }}
     >
       <div style={{ fontSize: 13, fontWeight: 600, color: color.textQuaternary }}>{s.title} · 1시간</div>
       <div
         style={{
-          fontSize: 24,
+          fontSize: 23,
           fontWeight: 800,
           color: color.textPrimary,
           marginTop: 8,
@@ -38,9 +38,7 @@ export function WhoAreYou() {
         누구로 응답하시나요?
       </div>
       <div style={{ fontSize: 14.5, color: color.textTertiary, marginTop: 6, lineHeight: 1.5 }}>
-        이름만 고르면 바로 시작돼요 —
-        <br />
-        시간 응답은 익명으로 집계돼요
+        하단의 참가자 리스트 중에서 본인의 이름을 선택해주세요.
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 22 }}>
