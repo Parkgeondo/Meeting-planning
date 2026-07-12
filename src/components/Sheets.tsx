@@ -19,13 +19,12 @@ import clipboardIcon from '../assets/clipboard.png'
 const SHEET_OWNER: Record<Exclude<Sheet, null>, 'host' | 'attendee'> = {
   range: 'host',
   info: 'host',
-  cell: 'host', // 'cell'은 cellFrom으로 프레임을 판별 (⑤ 주최자/참석자 양쪽에서 열림)
+  cell: 'host',
   confirm: 'host',
   role: 'attendee',
   submitted: 'attendee',
 }
 
-/** Two-phase close: 닫힐 때 바로 unmount하지 않고 퇴장 애니메이션(270ms)을 재생. */
 export function Sheets({ role }: { role: 'host' | 'attendee' }) {
   const { state } = useStore()
   const owner = state.sheet === 'cell' ? state.cellFrom : state.sheet ? SHEET_OWNER[state.sheet] : null
@@ -80,14 +79,12 @@ export function Sheets({ role }: { role: 'host' | 'attendee' }) {
 
 const sheetTitle: CSSProperties = { fontSize: 18, fontWeight: 800, color: color.textPrimary }
 
-/** Close the sheet, discarding an unsent objection draft. */
 function useCloseSheet() {
   const { set } = useStore()
   return () =>
     set((st) => ({ sheet: null, ...(st.objSentByMe ? {} : { objChip: null, objText: '' }) }))
 }
 
-/** 회의 안건 card shared by both role sheets. */
 function AgendaCard({ agenda }: { agenda: string }) {
   return (
     <div style={{ marginTop: 12, background: color.fillLight, borderRadius: 12, padding: 12 }}>
@@ -110,7 +107,6 @@ function AgendaCard({ agenda }: { agenda: string }) {
   )
 }
 
-/** 역할 강조 회색 배지 (필수 참석 / 선택 참석). */
 function RoleBadge({ children }: { children: string }) {
   return (
     <span
@@ -157,7 +153,6 @@ const ghostFull: CSSProperties = {
   fontFamily: 'inherit',
 }
 
-/** ④ 역할 시트 — 필수 참석자: 비공개 이의(사유 칩/직접입력) 채널. */
 function RoleReqSheet() {
   const { state, set } = useStore()
   const s = state
@@ -246,7 +241,6 @@ function RoleReqSheet() {
   )
 }
 
-/** ④ 역할 시트 — 선택 참석자: 필수 변경 요청 + 부담 없는 opt-out 채널. */
 function RoleOptSheet() {
   const { state, set } = useStore()
   const s = state
@@ -344,7 +338,6 @@ function RoleOptSheet() {
   )
 }
 
-/** Green success check used in both role-sheet confirmations. */
 function CheckCircle() {
   return (
     <div
@@ -377,8 +370,6 @@ function InfoSheet() {
         필수 참석자가 안 되는 시간은 후보에서 제외돼요. <br/>선택 참석자의 시간은 참고로 반영돼요.
         <br />
         <br />
-        {/* <b style={{ color: color.textPrimary }}>지정이 확실하지 않아도 괜찮아요</b> — 참석자가 다르게 생각하면
-        주최자님에게만 조용히 의견을 보낼 수 있어요. */}
       </div>
       <button
         onClick={close}
@@ -967,7 +958,6 @@ function RangeSheet() {
         </div>
       </Collapse>
 
-      {/* 요일 섹션 — 직접 선택 모드에서는 접힘 */}
       <Collapse open={!custom}>
         <div>
           <div style={{ fontSize: 12.5, fontWeight: 600, color: color.textQuaternary, margin: '16px 0 8px', padding: '0 2px' }}>요일</div>

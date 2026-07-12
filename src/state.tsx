@@ -48,24 +48,19 @@ export interface RangeState {
   days: boolean[]
   start: number
   end: number
-  /** Encoded selected dates: month*100 + day (e.g. 7/8 → 708). */
   dates: number[]
   month: number
 }
 
-/** Detail of the tapped heatmap cell (⑤ → cell sheet). */
 export interface CellSel {
   dl: string
   hr: number
   locked: boolean
   heat: number
-  /** 필수 참석자 중 이 시간에 어려운 사람 (더미 1–2명). */
   blockedBy: string[]
-  /** 선택 참석자 중 이 시간에 어려운 사람 (오렌지 점). */
   optBlocked: string[]
 }
 
-/** ⑥ 추천 카드 라디오 선택. */
 export type RecSel = 'r1' | 'r2' | 'r3'
 
 export interface AppState {
@@ -80,30 +75,21 @@ export interface AppState {
   range: RangeState
   roles: Record<string, Role>
   extra: string[]
-  /** Base roster names removed from the meeting. */
   removed: string[]
   who: string
   addVal: string
-  /** ④ STEP 1/2 attendee input. */
   xStep: 1 | 2
   xExcluded: Record<string, boolean>
-  /** "되긴 해요" (soft-negative) cells painted in STEP 2. */
   xSoso: Record<string, boolean>
   xDrag: 'exclude' | 'restore' | 'soso' | 'unsoso' | null
   sheet: Sheet
   cellSel: CellSel | null
-  /** Which phone frame opened the cell sheet (⑤ host vs ⑤ attendee dashboard). */
   cellFrom: 'host' | 'attendee'
-  /** ⑥ 추천 카드 라디오 선택. */
   recSel: RecSel
-  /** Heatmap cell being pulse-highlighted (`di-hi`), cleared after 3.2s. */
   hlCell: string | null
-  /** Selected preset objection chip (필수 role sheet), or null. */
   objChip: number | null
-  /** Free-text objection (필수 role sheet). */
   objText: string
   objSentByMe: boolean
-  /** Name of the 선택 attendee who opted out, or null. */
   optOutBy: string | null
   orgObjection: OrgObjection
   responded: number
@@ -112,7 +98,6 @@ export interface AppState {
   reRec: boolean
   statusView: StatusView
   copied: boolean
-  /** 주최자가 카카오톡으로 공유하면 참석자 채팅방에 링크가 표시됩니다. */
   linkShared: boolean
 }
 
@@ -154,18 +139,13 @@ const initialState: AppState = {
   linkShared: false,
 }
 
-/** Legacy `screen` in patches is routed to host/attendee navigation. */
 export type SetPatch = Partial<AppState> & { screen?: Screen }
 
 interface Store {
   state: AppState
-  /** Shallow-merge a patch (object) or updater function into state. */
   set: (patch: SetPatch | ((s: AppState) => SetPatch | null)) => void
-  /** Merge into `range`. */
   setRange: (patch: Partial<RangeState>) => void
-  /** Navigate to a screen and close any open sheet. */
   go: (screen: Screen) => void
-  /** All members = base roster + added extras. */
   names: string[]
 }
 

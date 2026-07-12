@@ -87,7 +87,6 @@ function ChatBubble({
   )
 }
 
-/** 공유하기 원형 버튼 (업로드 아이콘) — 링크 카드 오른쪽 스택. */
 function ShareCircle() {
   return (
     <div
@@ -110,7 +109,6 @@ function ShareCircle() {
   )
 }
 
-/** 카톡 링크 카드 — 썸네일 배너 + 본문. */
 function ThumbCard({
   title,
   desc,
@@ -160,7 +158,6 @@ function ThumbCard({
   )
 }
 
-/** 지민이 보낸 카드 메시지 행 (카드 + 오른쪽 공유 버튼/타임스탬프 스택). */
 function CardRow({ time, children }: { time: string; children: ReactNode }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 14 }}>
@@ -184,12 +181,10 @@ const headerIconStroke = '#26343F'
 function HeaderIcons() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: 'none' }}>
-      {/* 검색 */}
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
         <circle cx="10.5" cy="10.5" r="6.5" stroke={headerIconStroke} strokeWidth="2" />
         <path d="M15.5 15.5L20 20" stroke={headerIconStroke} strokeWidth="2" strokeLinecap="round" />
       </svg>
-      {/* 전화 */}
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
         <path
           d="M5 4.5C5 3.7 5.7 3 6.5 3h2L10 7l-1.8 1.8c.9 2.1 2.9 4.1 5 5L15 12l4 1.5v2c0 .8-.7 1.5-1.5 1.5C10.6 17 7 13.4 7 6.5"
@@ -200,7 +195,6 @@ function HeaderIcons() {
           fill="none"
         />
       </svg>
-      {/* 햄버거 */}
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
         <path d="M4 6.5H20M4 12H20M4 17.5H20" stroke={headerIconStroke} strokeWidth="2" strokeLinecap="round" />
       </svg>
@@ -227,7 +221,6 @@ export function KakaoChat() {
         position: 'relative',
       }}
     >
-      {/* 헤더 — 배경 없이 투명 */}
       <div
         style={{
           display: 'flex',
@@ -290,7 +283,6 @@ export function KakaoChat() {
         )}
       </div>
 
-      {/* 입력바 */}
       <div
         style={{
           background: '#fff',

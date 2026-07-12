@@ -10,12 +10,10 @@ export function Dashboard({ attendeeView = false }: { attendeeView?: boolean }) 
   const s = state
   const jisooOpt = s.orgObjection === 'accepted'
 
-  // ⑥ "시간 보기"로 진입한 셀을 3회 펄스 후 페이드아웃.
   useEffect(() => {
     if (!s.hlCell) return
     const t = setTimeout(() => set({ hlCell: null }), 3200)
     return () => clearTimeout(t)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.hlCell])
 
   const showObjCard =
