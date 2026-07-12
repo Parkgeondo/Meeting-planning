@@ -405,7 +405,6 @@ function CellSheet() {
           style={{
             marginTop: 14,
             background: '#FFF6F3',
-            border: '1.5px solid #FFD8CC',
             borderRadius: 16,
             padding: '14px 14px 12px',
           }}

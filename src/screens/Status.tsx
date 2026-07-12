@@ -92,7 +92,6 @@ export function Status({ view }: { view: 'org' | 'att' }) {
           style={{
             marginTop: 14,
             background: '#FFF3EF',
-            border: '1.5px solid #FFD0C2',
             borderRadius: 16,
             padding: 14,
             animation: 'popIn .3s ease both',
