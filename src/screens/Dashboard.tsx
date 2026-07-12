@@ -1,9 +1,8 @@
 import { useEffect } from 'react'
-import { DAYS, HEAT_COLORS, HOURSX, LUNCH_HOUR, OBJ_CHIPS, PRESEED_OBJECTION, baseHeat, isLocked, lockedAttendees, optBlockedAttendees } from '../data'
+import { DAYS, HEAT_COLORS, HOURSX, LUNCH_HOUR, OBJ_CHIPS, baseHeat, isLocked, lockedAttendees, optBlockedAttendees } from '../data'
 import { useStore } from '../state'
 import { avatarColor, color } from '../tokens'
 import lockIcon from '../assets/lock.png'
-import bubbleIcon from '../assets/bubble.png'
 
 export function Dashboard({ attendeeView = false }: { attendeeView?: boolean }) {
   const { state, set, go, names } = useStore()
@@ -16,13 +15,12 @@ export function Dashboard({ attendeeView = false }: { attendeeView?: boolean }) 
     return () => clearTimeout(t)
   }, [s.hlCell])
 
-  const showObjCard =
-    !attendeeView && s.orgObjection === 'pending' && (PRESEED_OBJECTION || s.objSentByMe)
+  const showObjCard = !attendeeView && s.orgObjection === 'pending' && s.objSentByMe
   const showObjResult = s.orgObjection !== 'pending'
   const objReason = (s.objChip !== null ? OBJ_CHIPS[s.objChip] : null) || s.objText.trim() || '참석 필요성에 대한 의견'
   const objResultMsg =
     s.orgObjection === 'accepted'
-      ? '지수님을 선택 참석으로 변경했어요 · 그룹에는 알리지 않아요 · 히트맵이 다시 계산됐어요'
+      ? `${s.who}님을 선택 참석으로 변경했어요 · 히트맵이 다시 계산됐어요`
       : '참석을 요청했어요 · 지수님에게 "주최자가 참석을 요청했어요"로 전달돼요'
 
   const canSimulate = s.responded < 6
@@ -56,8 +54,7 @@ export function Dashboard({ attendeeView = false }: { attendeeView?: boolean }) 
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, fontWeight: 700, color: color.textPrimary, lineHeight: 1.5 }}>
-            <img src={bubbleIcon} alt="" width={16} height={16} style={{ flex: 'none' }} />
-            지수님이 참석 필요성에 대해 의견을 보냈어요
+            {s.who}님이 참석 필요성에 대해 의견을 보냈어요
           </div>
           <div style={{ fontSize: 13, color: color.textTertiary, marginTop: 4 }}>"{objReason}"</div>
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
@@ -107,6 +104,7 @@ export function Dashboard({ attendeeView = false }: { attendeeView?: boolean }) 
             padding: '10px 14px',
             fontSize: 12.5,
             fontWeight: 600,
+            lineHeight: 1.4,
             color: color.textSecondary,
           }}
         >
@@ -282,27 +280,6 @@ export function Dashboard({ attendeeView = false }: { attendeeView?: boolean }) 
           >
             <img src={lockIcon} alt="" width={12} height={12} />
             필수 참가자 불가
-          </span>
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 4,
-              fontSize: 11,
-              color: color.textDisabled,
-              marginLeft: 4,
-            }}
-          >
-            <span
-              style={{
-                width: 6,
-                height: 6,
-                borderRadius: '50%',
-                background: '#FF9500',
-                display: 'inline-block',
-              }}
-            />
-            선택 불가
           </span>
         </div>
       </div>

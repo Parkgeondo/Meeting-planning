@@ -25,13 +25,11 @@ export function WhoAreYou() {
         animation: 'fadeUp .3s ease both',
       }}
     >
-      <div style={{ fontSize: 13, fontWeight: 600, color: color.textQuaternary }}>{s.title} · 1시간</div>
       <div
         style={{
           fontSize: 23,
           fontWeight: 800,
           color: color.textPrimary,
-          marginTop: 8,
           letterSpacing: '-.01em',
         }}
       >

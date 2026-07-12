@@ -123,10 +123,9 @@ export function Status({ view }: { view: 'org' | 'att' }) {
         </div>
       )}
 
-      {isOrg && (
-        <div style={{ marginTop: 14, background: color.fillLight, borderRadius: 18, padding: '16px 18px' }}>
+      <div style={{ marginTop: 14, background: color.fillLight, borderRadius: 18, padding: '16px 18px' }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: color.textQuaternary, marginBottom: 10 }}>
-            참석 현황 · {s.bailed ? '5/6명 참석 예정' : '6/6명 참석 예정'}
+            참석 현황 · {s.bailed ? `${Math.max(0, names.length - 1)}/${names.length}명 참석 예정` : `${names.length}/${names.length}명 참석 예정`}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
             {names.map((n, i) => {
@@ -180,34 +179,36 @@ export function Status({ view }: { view: 'org' | 'att' }) {
             })}
           </div>
         </div>
-      )}
 
       {!isOrg && s.bailed && (
         <div
           style={{
-            marginTop: 14,
+            marginTop: 10,
             background: color.fillLight,
-            borderRadius: 16,
-            padding: 18,
+            borderRadius: 18,
+            padding: '22px 18px 18px',
             textAlign: 'center',
             animation: 'popIn .3s ease both',
+            flex: 'none',
           }}
         >
-          <div style={{ fontSize: 16, fontWeight: 800, color: color.textPrimary }}>알려줘서 고마워요</div>
-          <div style={{ fontSize: 13, color: color.textQuaternary, marginTop: 5 }}>
-            주최자에게 전달됐어요 · 사유는 남기지 않아도 돼요
+          <div style={{ fontSize: 17, fontWeight: 800, color: color.textPrimary, letterSpacing: '-.01em' }}>
+            알려줘서 고마워요
+          </div>
+          <div style={{ fontSize: 13.5, color: color.textQuaternary, marginTop: 6, fontWeight: 500 }}>
+            주최자에게 전달됐어요
           </div>
           <button
             onClick={() => set({ bailed: false })}
             style={{
-              marginTop: 12,
-              height: 38,
-              padding: '0 16px',
+              marginTop: 16,
+              height: 42,
+              padding: '0 22px',
               border: `1px solid ${color.border}`,
-              borderRadius: 11,
+              borderRadius: 12,
               background: '#fff',
-              color: color.textQuaternary,
-              fontSize: 12.5,
+              color: color.textSecondary,
+              fontSize: 14,
               fontWeight: 700,
               cursor: 'pointer',
               fontFamily: 'inherit',
@@ -218,7 +219,7 @@ export function Status({ view }: { view: 'org' | 'att' }) {
         </div>
       )}
 
-      {!isOrg && !s.bailed && (
+      {!isOrg && (
         <div style={{ marginTop: 'auto', paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 8, flex: 'none' }}>
           <button
             style={{
@@ -235,6 +236,24 @@ export function Status({ view }: { view: 'org' | 'att' }) {
           >
             캘린더에 추가
           </button>
+          {!s.bailed && (
+            <button
+              onClick={() => set({ sheet: 'bail' })}
+              style={{
+                height: 42,
+                border: 'none',
+                borderRadius: 14,
+                background: color.fill,
+                color: color.textTertiary,
+                fontSize: 14,
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+              }}
+            >
+              회의 참석이 불가해요
+            </button>
+          )}
         </div>
       )}
 

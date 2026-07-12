@@ -34,8 +34,6 @@ export const MAX_HEARTS = 3
 export const DEADLINE_BASE = new Date(2026, 6, 6, 10, 0)
 export const DL_DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토']
 
-export const PRESEED_OBJECTION = true
-
 export const OBJ_CHIPS: string[] = []
 
 export const LUNCH_HOUR = 12
