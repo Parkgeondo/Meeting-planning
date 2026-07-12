@@ -122,7 +122,7 @@ export function InputGrid() {
         display: 'flex',
         flexDirection: 'column',
         flex: 1,
-        padding: '20px 18px 18px',
+        padding: '26px 15px 22px',
         animation: 'fadeUp .3s ease both',
       }}
     >
@@ -131,7 +131,7 @@ export function InputGrid() {
           <div style={{ fontSize: 19, fontWeight: 800, color: color.textPrimary, letterSpacing: '-.01em' }}>
             {s.title}
           </div>
-          <div style={{ fontSize: 12.5, color: color.textQuaternary, marginTop: 3 }}>
+          <div style={{ fontSize: 12.5, color: color.textQuaternary, marginTop: 3, padding: '0 2px' }}>
             1시간 회의 · 다음 주 중 · 기한까지 26시간
           </div>
         </div>
@@ -161,7 +161,7 @@ export function InputGrid() {
             <div style={{ fontSize: 20, fontWeight: 800, color: color.textPrimary, letterSpacing: '-.01em' }}>
               안 되는 시간만 지워주세요
             </div>
-            <div style={{ fontSize: 13, color: color.textTertiary, marginTop: 4 }}>
+            <div style={{ fontSize: 13, color: color.textTertiary, marginTop: 4, padding: '0 2px' }}>
               요일을 누르면 하루 통째로 지울 수 있어요
             </div>
           </div>
@@ -183,9 +183,9 @@ export function InputGrid() {
         <div style={{ marginTop: 16, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: 20, fontWeight: 800, color: color.textPrimary, letterSpacing: '-.01em' }}>
-              가능하면 피하고 싶은 시간은?
+              선호하지 않는 시간은?
             </div>
-            <div style={{ fontSize: 13, color: color.textTertiary, marginTop: 4 }}>
+            <div style={{ fontSize: 13, color: color.textTertiary, marginTop: 4, padding: '0 2px' }}>
               해당 시간이 아닌 시간을 우선적으로 고려해요
             </div>
           </div>
@@ -295,7 +295,7 @@ export function InputGrid() {
             </div>
           </div>
           <div style={{ fontSize: 12, color: color.textQuaternary, textAlign: 'center', marginTop: 8 }}>
-            응답은 익명으로 집계돼요 · 표시 안 하면 '좋아요'로 제출돼요
+            선호하지 않는 시간은 익명으로 집계돼요
           </div>
         </>
       )}

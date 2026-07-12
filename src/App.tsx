@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { StoreProvider, useStore, type AttendeeScreen, type HostScreen, type Screen, type Sheet } from './state'
+import { StoreProvider, useStore, type AttendeeScreen, type HostScreen, type Screen } from './state'
 import { color } from './tokens'
 import { CreateMeeting } from './screens/CreateMeeting'
 import { AssignAttendees } from './screens/AssignAttendees'
@@ -30,15 +30,6 @@ const ATTENDEE_NAV: NavChip[] = [
   { label: '⑤ 대시보드', screen: 's5att' },
   { label: '⑦ 상태', screen: 's7' },
 ]
-
-const SHEET_OWNER: Record<Exclude<Sheet, null>, 'host' | 'attendee'> = {
-  range: 'host',
-  info: 'host',
-  cell: 'host',
-  confirm: 'host',
-  role: 'attendee',
-  submitted: 'attendee',
-}
 
 function FlowNav({
   title,
@@ -130,10 +121,8 @@ function AttendeeScreen() {
 }
 
 function FrameSheets({ role }: { role: 'host' | 'attendee' }) {
-  const { state } = useStore()
-  if (!state.sheet) return null
-  if (SHEET_OWNER[state.sheet] !== role) return null
-  return <Sheets />
+  // Sheets가 소유 프레임 판별과 two-phase 퇴장 애니메이션을 담당하므로 항상 렌더.
+  return <Sheets role={role} />
 }
 
 function PhoneFrame({

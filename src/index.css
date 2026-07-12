@@ -18,6 +18,10 @@ input {
   font-family: inherit;
 }
 
+input::placeholder {
+  color: #a5afb8;
+}
+
 button {
   font-family: inherit;
 }
@@ -88,6 +92,45 @@ button {
 @keyframes confettiFall {
   to {
     transform: translateY(800px) rotate(560deg);
+    opacity: 0;
+  }
+}
+
+@keyframes hlPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2.5px #ff9500;
+  }
+  50% {
+    box-shadow: 0 0 0 3.5px rgba(255, 149, 0, 0.35);
+  }
+}
+
+@keyframes sheetDown {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(102%);
+  }
+}
+
+@keyframes dimOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes popOutC {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.9);
     opacity: 0;
   }
 }

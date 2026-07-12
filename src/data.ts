@@ -66,6 +66,48 @@ export function lockedAttendees(di: number, hi: number, jisooOpt: boolean): stri
   return []
 }
 
+/** Dummy: which 선택 attendees can't make this slot (⑤ orange dot). */
+export function optBlockedAttendees(di: number, hi: number): string[] {
+  return di === 2 && (hi === 0 || hi === 1) ? ['서연'] : [] // 수 9시·10시
+}
+
+/** ⑥ 추천 카드 한 장의 데이터. */
+export interface RecOption {
+  id: 'r1' | 'r2' | 'r3'
+  rank: number
+  /** 카드에 표시되는 시간 라벨. */
+  time: string
+  /** 확정 다이얼로그용 짧은 라벨 (예: '화요일 15:00'). */
+  short: string
+  /** ⑦/카톡 확정 카드용 날짜 (예: '7월 7일 화요일'). */
+  date: string
+  /** ⑦/카톡 확정 카드용 시간 범위 (예: '15:00 – 16:00'). */
+  range: string
+  badges: string[]
+  /** 히트맵 하이라이트 좌표 (di, hi — HOURSX 인덱스). */
+  di: number
+  hi: number
+}
+
+export function recOptions(reRec: boolean): RecOption[] {
+  return reRec
+    ? [
+        { id: 'r1', rank: 1, time: '목요일 10:00 – 11:00', short: '목요일 10:00', date: '7월 9일 목요일', range: '10:00 – 11:00', badges: ['필수 4명 전원 가능', '선호 점수 10/12'], di: 3, hi: 1 },
+        { id: 'r2', rank: 2, time: '수 16:00 – 17:00', short: '수요일 16:00', date: '7월 8일 수요일', range: '16:00 – 17:00', badges: ['필수 4명 전원 가능', '선호 점수 9/12'], di: 2, hi: 7 },
+        { id: 'r3', rank: 3, time: '화 11:00 – 12:00', short: '화요일 11:00', date: '7월 7일 화요일', range: '11:00 – 12:00', badges: ['필수 4명 전원 가능', '선호 점수 8/12'], di: 1, hi: 2 },
+      ]
+    : [
+        { id: 'r1', rank: 1, time: '화요일 15:00 – 16:00', short: '화요일 15:00', date: '7월 7일 화요일', range: '15:00 – 16:00', badges: ['필수 4명 전원 가능', '선호 점수 11/12'], di: 1, hi: 6 },
+        { id: 'r2', rank: 2, time: '목 10:00 – 11:00', short: '목요일 10:00', date: '7월 9일 목요일', range: '10:00 – 11:00', badges: ['필수 4명 전원 가능', '선호 점수 10/12'], di: 3, hi: 1 },
+        { id: 'r3', rank: 3, time: '수 16:00 – 17:00', short: '수요일 16:00', date: '7월 8일 수요일', range: '16:00 – 17:00', badges: ['필수 4명 전원 가능', '선호 점수 9/12'], di: 2, hi: 7 },
+      ]
+}
+
+/** 확정된(선택된) 추천 옵션. */
+export function selectedRec(reRec: boolean, recSel: 'r1' | 'r2' | 'r3'): RecOption {
+  return recOptions(reRec).find((o) => o.id === recSel) ?? recOptions(reRec)[0]
+}
+
 /** Baseline preference heat for a cell (0..1) — three hand-picked peaks + smooth field. */
 export function baseHeat(di: number, hi: number): number {
   if (di === 1 && hi === 6) return 1 // 화 15시 — 1위

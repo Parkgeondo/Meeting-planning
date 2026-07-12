@@ -61,7 +61,12 @@ export interface CellSel {
   heat: number
   /** 필수 참석자 중 이 시간에 어려운 사람 (더미 1–2명). */
   blockedBy: string[]
+  /** 선택 참석자 중 이 시간에 어려운 사람 (오렌지 점). */
+  optBlocked: string[]
 }
+
+/** ⑥ 추천 카드 라디오 선택. */
+export type RecSel = 'r1' | 'r2' | 'r3'
 
 export interface AppState {
   hostScreen: HostScreen
@@ -87,6 +92,12 @@ export interface AppState {
   xDrag: 'exclude' | 'restore' | 'soso' | 'unsoso' | null
   sheet: Sheet
   cellSel: CellSel | null
+  /** Which phone frame opened the cell sheet (⑤ host vs ⑤ attendee dashboard). */
+  cellFrom: 'host' | 'attendee'
+  /** ⑥ 추천 카드 라디오 선택. */
+  recSel: RecSel
+  /** Heatmap cell being pulse-highlighted (`di-hi`), cleared after 3.2s. */
+  hlCell: string | null
   /** Selected preset objection chip (필수 role sheet), or null. */
   objChip: number | null
   /** Free-text objection (필수 role sheet). */
@@ -126,6 +137,9 @@ const initialState: AppState = {
   xDrag: null,
   sheet: null,
   cellSel: null,
+  cellFrom: 'host',
+  recSel: 'r1',
+  hlCell: null,
   objChip: null,
   objText: '',
   objSentByMe: false,

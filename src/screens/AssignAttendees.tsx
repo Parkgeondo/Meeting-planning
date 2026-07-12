@@ -61,7 +61,7 @@ export function AssignAttendees() {
         display: 'flex',
         flexDirection: 'column',
         flex: 1,
-        padding: '26px 22px 22px',
+        padding: '26px 15px 22px',
         animation: 'fadeUp .3s ease both',
       }}
     >

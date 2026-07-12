@@ -1,5 +1,5 @@
-import type { CSSProperties } from 'react'
-import { DAY_NAMES } from '../data'
+import { useEffect, useState, type CSSProperties } from 'react'
+import { DAY_NAMES, selectedRec } from '../data'
 import {
   MAX_MONTH,
   MIN_MONTH,
@@ -8,29 +8,74 @@ import {
   fmtHour,
   toggleDates,
 } from '../range'
-import { useStore } from '../state'
+import { useStore, type Sheet } from '../state'
 import { avatarColor, color } from '../tokens'
-import { BottomSheet } from './Sheet'
-import { Toggle } from './ui'
+import { BottomSheet, SheetClosingContext } from './Sheet'
+import { Collapse, Toggle } from './ui'
+import lockIcon from '../assets/lock.png'
+import checkGreenIcon from '../assets/check-green.png'
+import clipboardIcon from '../assets/clipboard.png'
 
-export function Sheets() {
+const SHEET_OWNER: Record<Exclude<Sheet, null>, 'host' | 'attendee'> = {
+  range: 'host',
+  info: 'host',
+  cell: 'host', // 'cell'은 cellFrom으로 프레임을 판별 (⑤ 주최자/참석자 양쪽에서 열림)
+  confirm: 'host',
+  role: 'attendee',
+  submitted: 'attendee',
+}
+
+/** Two-phase close: 닫힐 때 바로 unmount하지 않고 퇴장 애니메이션(270ms)을 재생. */
+export function Sheets({ role }: { role: 'host' | 'attendee' }) {
   const { state } = useStore()
-  switch (state.sheet) {
+  const owner = state.sheet === 'cell' ? state.cellFrom : state.sheet ? SHEET_OWNER[state.sheet] : null
+  const active = state.sheet && owner === role ? state.sheet : null
+
+  const [shown, setShown] = useState<Sheet>(active)
+  const [closing, setClosing] = useState(false)
+
+  useEffect(() => {
+    if (active) {
+      setShown(active)
+      setClosing(false)
+      return
+    }
+    setClosing(true)
+    const t = setTimeout(() => {
+      setShown(null)
+      setClosing(false)
+    }, 270)
+    return () => clearTimeout(t)
+  }, [active])
+
+  const shownNow = active ?? (closing ? shown : null)
+  if (!shownNow) return null
+
+  let node: JSX.Element | null
+  switch (shownNow) {
     case 'role':
-      return (state.roles[state.who] || '선택') === '필수' ? <RoleReqSheet /> : <RoleOptSheet />
+      node = (state.roles[state.who] || '선택') === '필수' ? <RoleReqSheet /> : <RoleOptSheet />
+      break
     case 'info':
-      return <InfoSheet />
+      node = <InfoSheet />
+      break
     case 'range':
-      return <RangeSheet />
+      node = <RangeSheet />
+      break
     case 'cell':
-      return <CellSheet />
+      node = <CellSheet />
+      break
     case 'confirm':
-      return <ConfirmDialog />
+      node = <ConfirmDialog />
+      break
     case 'submitted':
-      return <SubmittedSheet />
+      node = <SubmittedSheet />
+      break
     default:
-      return null
+      node = null
   }
+
+  return <SheetClosingContext.Provider value={closing && !active}>{node}</SheetClosingContext.Provider>
 }
 
 const sheetTitle: CSSProperties = { fontSize: 18, fontWeight: 800, color: color.textPrimary }
@@ -42,13 +87,45 @@ function useCloseSheet() {
     set((st) => ({ sheet: null, ...(st.objSentByMe ? {} : { objChip: null, objText: '' }) }))
 }
 
-/** 📋 회의 안건 card shared by both role sheets. */
+/** 회의 안건 card shared by both role sheets. */
 function AgendaCard({ agenda }: { agenda: string }) {
   return (
     <div style={{ marginTop: 12, background: color.fillLight, borderRadius: 12, padding: 12 }}>
-      <div style={{ fontSize: 11.5, fontWeight: 700, color: '#2F87FF', marginBottom: 4 }}>📋 회의 안건</div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 5,
+          fontSize: 11.5,
+          fontWeight: 700,
+          color: '#2F87FF',
+          marginBottom: 4,
+        }}
+      >
+        <img src={clipboardIcon} alt="" width={14} height={14} style={{ flex: 'none' }} />
+        회의 안건
+      </div>
       <div style={{ fontSize: 13.5, fontWeight: 600, color: color.textPrimary, lineHeight: 1.5 }}>{agenda}</div>
     </div>
+  )
+}
+
+/** 역할 강조 회색 배지 (필수 참석 / 선택 참석). */
+function RoleBadge({ children }: { children: string }) {
+  return (
+    <span
+      style={{
+        background: '#F2F4F6',
+        color: '#4E5968',
+        borderRadius: 6,
+        padding: '2px 8px',
+        fontSize: 14.5,
+        fontWeight: 800,
+        verticalAlign: 'middle',
+      }}
+    >
+      {children}
+    </span>
   )
 }
 
@@ -96,12 +173,12 @@ function RoleReqSheet() {
           <div style={{ fontSize: 18, fontWeight: 800, color: color.textPrimary, lineHeight: 1.4 }}>
             이 회의에서 {who}님은
             <br />
-            <span style={{ color: color.primary }}>필수 참석</span>으로 지정됐어요
+            <RoleBadge>필수 참석</RoleBadge>으로 지정됐어요
           </div>
           <AgendaCard agenda={agendaShown} />
-          <div style={{ fontSize: 13.5, color: color.textTertiary, marginTop: 12, lineHeight: 1.6 }}>
-            안건을 보고 참석이 꼭 필요하지 않다고 생각되면, <b style={{ color: color.textPrimary }}>주최자에게만</b>{' '}
-            조용히 알릴 수 있어요. 다른 참석자에게는 보이지 않아요.
+          <div style={{ fontSize: 13.5, color: color.textTertiary, marginTop: 12, lineHeight: 1.6, padding: '0 2px' }}>
+            안건을 보고 참석이 필요하지 않다고 생각이 되면{' '}
+            <b style={{ color: color.textPrimary }}>주최자에게</b> 선택 참석 변경을 요청할 수 있어요.
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginTop: 16 }}>
             <input
@@ -163,31 +240,13 @@ function RoleReqSheet() {
               전송 취소
             </button>
           </div>
-          <button
-            onClick={close}
-            style={{
-              marginTop: 14,
-              width: '100%',
-              height: 50,
-              border: 'none',
-              borderRadius: 14,
-              background: color.primary,
-              color: '#fff',
-              fontSize: 15,
-              fontWeight: 700,
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-            }}
-          >
-            시간 입력 계속하기
-          </button>
         </>
       )}
     </BottomSheet>
   )
 }
 
-/** ④ 역할 시트 — 선택 참석자: 부담 없는 opt-out 채널. */
+/** ④ 역할 시트 — 선택 참석자: 필수 변경 요청 + 부담 없는 opt-out 채널. */
 function RoleOptSheet() {
   const { state, set } = useStore()
   const s = state
@@ -195,79 +254,89 @@ function RoleOptSheet() {
   const who = s.who
   const agendaShown = s.agenda || s.title
   const optedOut = s.optOutBy === who
+  const reqReady = s.objText.trim().length > 0
 
   return (
     <BottomSheet onClose={close}>
-      {!optedOut ? (
+      {optedOut ? (
+        <div style={{ textAlign: 'center', paddingTop: 6, animation: 'popIn .3s ease both' }}>
+          <CheckCircle />
+          <div style={{ fontSize: 18, fontWeight: 800, color: color.textPrimary, marginTop: 14 }}>
+            주최자에게 전달됐어요
+          </div>
+          <div style={{ fontSize: 13.5, color: color.textTertiary, marginTop: 8 }}>사유는 묻지 않아요.</div>
+          <button onClick={() => set({ optOutBy: null })} style={revertLink}>
+            되돌리기
+          </button>
+        </div>
+      ) : s.objSentByMe ? (
+        <div style={{ textAlign: 'center', paddingTop: 6, animation: 'popIn .3s ease both' }}>
+          <CheckCircle />
+          <div style={{ fontSize: 18, fontWeight: 800, color: color.textPrimary, marginTop: 14 }}>
+            주최자에게만 전달됐어요
+          </div>
+          <div style={{ fontSize: 13.5, color: color.textTertiary, marginTop: 8, lineHeight: 1.6 }}>
+            다른 참석자에게는 보이지 않아요.
+            <br />
+            참석하게 될 수도 있으니, 가능한 시간은 이어서 알려주세요.
+          </div>
+          <button onClick={() => set({ objSentByMe: false, objChip: null, objText: '' })} style={revertLink}>
+            전송 취소
+          </button>
+        </div>
+      ) : (
         <>
           <div style={{ fontSize: 18, fontWeight: 800, color: color.textPrimary, lineHeight: 1.4 }}>
             이 회의에서 {who}님은
             <br />
-            <span style={{ color: color.primary }}>선택 참석</span>이에요
-          </div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: color.textPrimary, marginTop: 10, lineHeight: 1.55 }}>
-            참석하지 않아도 괜찮아요.
-            <br />
-            사유를 말할 필요도 없어요.
+            <RoleBadge>선택 참석</RoleBadge>이에요
           </div>
           <AgendaCard agenda={agendaShown} />
-          <div style={{ fontSize: 12.5, color: color.textQuaternary, marginTop: 12, lineHeight: 1.6 }}>
-            {who}님의 시간은 참고로 반영돼요 — {who}님이 어려운 시간에도 회의가 잡힐 수 있어요
+          <div style={{ fontSize: 13.5, color: color.textTertiary, marginTop: 12, lineHeight: 1.6, padding: '0 2px' }}>
+            안건을 보고 꼭 참석해야 한다고 생각이 되면{' '}
+            <b style={{ color: color.textPrimary }}>주최자에게</b> 필수 참석 변경을 요청할 수 있어요.
           </div>
-          <button
-            onClick={() => set({ optOutBy: who })}
+          <input
+            value={s.objText}
+            onChange={(e) => set({ objText: e.target.value, objChip: null })}
+            placeholder="예: 이번 안건은 제 담당 업무와 직접 관련이 있어요"
             style={{
-              marginTop: 16,
+              width: '100%',
+              boxSizing: 'border-box',
+              height: 44,
+              marginTop: 14,
+              padding: '0 14px',
+              borderRadius: 12,
+              fontFamily: 'inherit',
+              fontSize: 13.5,
+              fontWeight: 600,
+              outline: 'none',
+              border: s.objText.trim() ? `1.5px solid ${color.primary}` : `1.5px solid ${color.border}`,
+              background: s.objText.trim() ? color.primaryLight : '#fff',
+              color: color.textPrimary,
+            }}
+          />
+          <button
+            onClick={() => reqReady && set({ objSentByMe: true })}
+            style={{
+              marginTop: 14,
               width: '100%',
               height: 48,
               border: 'none',
               borderRadius: 14,
-              background: color.fill,
-              color: color.textPrimary,
-              fontSize: 14.5,
-              fontWeight: 700,
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-            }}
-          >
-            이번엔 빠질게요
-          </button>
-          <button onClick={close} style={ghostFull}>
-            괜찮아요, 닫기
-          </button>
-        </>
-      ) : (
-        <>
-          <div style={{ textAlign: 'center', paddingTop: 6, animation: 'popIn .3s ease both' }}>
-            <CheckCircle />
-            <div style={{ fontSize: 18, fontWeight: 800, color: color.textPrimary, marginTop: 14 }}>
-              주최자에게 전달됐어요
-            </div>
-            <div style={{ fontSize: 13.5, color: color.textTertiary, marginTop: 8 }}>사유는 묻지 않아요.</div>
-            <button onClick={() => set({ optOutBy: null })} style={revertLink}>
-              되돌리기
-            </button>
-          </div>
-          <button
-            onClick={() => set({ attendeeScreen: 's4', sheet: null })}
-            style={{
-              marginTop: 14,
-              width: '100%',
-              height: 50,
-              border: 'none',
-              borderRadius: 14,
-              background: color.primary,
-              color: '#fff',
+              background: reqReady ? color.primary : '#DEE3E8',
+              color: reqReady ? '#fff' : color.textQuaternary,
               fontSize: 15,
               fontWeight: 700,
-              cursor: 'pointer',
+              cursor: reqReady ? 'pointer' : 'default',
               fontFamily: 'inherit',
+              transition: 'all .2s',
             }}
           >
-            혹시 몰라 가능한 시간 남기기
+            필수 참석으로 변경 요청하기
           </button>
-          <button onClick={close} style={ghostFull}>
-            건너뛰고 닫기
+          <button onClick={() => set({ optOutBy: who })} style={ghostFull}>
+            이번엔 빠질게요
           </button>
         </>
       )}
@@ -304,7 +373,7 @@ function InfoSheet() {
   return (
     <BottomSheet onClose={close}>
       <div style={{ fontSize: 17, fontWeight: 800, color: color.textPrimary }}>필수와 선택, 뭐가 다른가요?</div>
-      <div style={{ fontSize: 14, color: color.textSecondary, marginTop: 12, lineHeight: 1.7 }}>
+      <div style={{ fontSize: 14, color: color.textSecondary, marginTop: 12, lineHeight: 1.6 }}>
         필수 참석자가 안 되는 시간은 후보에서 제외돼요. <br/>선택 참석자의 시간은 참고로 반영돼요.
         <br />
         <br />
@@ -356,11 +425,10 @@ function CellSheet() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 14,
               flex: 'none',
             }}
           >
-            🔒
+            <img src={lockIcon} alt="" width={15} height={15} />
           </div>
           <div style={{ fontSize: 19, fontWeight: 800, color: color.textPrimary, letterSpacing: '-.01em' }}>
             {title}
@@ -462,12 +530,100 @@ function CellSheet() {
     )
   }
 
-  const body = `✅ ${state.responded}명 모두 가능`
+  const optBlocked = cs.optBlocked ?? []
+  const hasOpt = optBlocked.length > 0
 
   return (
     <BottomSheet onClose={close}>
       <div style={{ fontSize: 19, fontWeight: 800, color: color.textPrimary }}>{title}</div>
-      <div style={{ fontSize: 14.5, color: color.textSecondary, marginTop: 10, lineHeight: 1.7 }}>{body}</div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          fontSize: 14.5,
+          color: color.textSecondary,
+          marginTop: 10,
+          lineHeight: 1.6,
+        }}
+      >
+        <img src={checkGreenIcon} alt="" width={16} height={16} style={{ flex: 'none' }} />
+        {hasOpt ? '필수 참석자는 모두 가능해요' : `${state.responded}명 모두 가능`}
+      </div>
+      {hasOpt && (
+        <>
+          <div
+            style={{
+              marginTop: 12,
+              background: color.fillLight,
+              borderRadius: 16,
+              padding: '14px 14px 12px',
+            }}
+          >
+            <div style={{ fontSize: 12, fontWeight: 800, color: color.textQuaternary, letterSpacing: '-.01em' }}>
+              후보에는 남아있는 시간
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: color.textPrimary, marginTop: 6, lineHeight: 1.5 }}>
+              선택 참석자 {optBlocked.length}명이 어려운 시간이에요
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
+              {optBlocked.map((name, i) => (
+                <div
+                  key={name}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    background: '#fff',
+                    borderRadius: 12,
+                    padding: '10px 12px',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: '50%',
+                      background: avatarColor(name, i),
+                      color: '#fff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 13,
+                      fontWeight: 700,
+                      flex: 'none',
+                    }}
+                  >
+                    {name[0]}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14.5, fontWeight: 700, color: color.textPrimary }}>{name}</div>
+                    <div style={{ fontSize: 12, color: color.textQuaternary, marginTop: 2, fontWeight: 600 }}>
+                      선택 · 이 시간 불가
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 11.5,
+                      fontWeight: 800,
+                      color: color.textQuaternary,
+                      background: color.fill,
+                      borderRadius: 10,
+                      padding: '4px 8px',
+                      flex: 'none',
+                    }}
+                  >
+                    불가
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{ fontSize: 12.5, color: color.textQuaternary, marginTop: 12, lineHeight: 1.5, fontWeight: 600 }}>
+            선택 참석자의 시간은 참고로만 반영돼요.
+          </div>
+        </>
+      )}
       <button
         onClick={close}
         style={{
@@ -493,7 +649,7 @@ function CellSheet() {
 function ConfirmDialog() {
   const { state, set } = useStore()
   const close = () => set({ sheet: null })
-  const confirmLabel = state.reRec ? '목요일 10:00' : '화요일 15:00'
+  const confirmLabel = selectedRec(state.reRec, state.recSel).short
   return (
     <BottomSheet onClose={close} center>
       <div style={{ fontSize: 18, fontWeight: 800, color: color.textPrimary }}>{confirmLabel}으로 확정할까요?</div>
@@ -522,7 +678,14 @@ function ConfirmDialog() {
         </button>
         <button
           onClick={() =>
-            set({ confirmed: true, sheet: null, attendeeScreen: 's4kakao', linkShared: true })
+            set({
+              confirmed: true,
+              sheet: null,
+              hostScreen: 's7',
+              statusView: 'org',
+              attendeeScreen: 's4kakao',
+              linkShared: true,
+            })
           }
           style={{
             flex: 1,
@@ -570,7 +733,7 @@ function SubmittedSheet() {
         응답이 제출됐어요
       </div>
       <div style={{ fontSize: 13.5, color: color.textTertiary, marginTop: 6, lineHeight: 1.6, textAlign: 'center' }}>
-        기한 전까지 이 링크에서 수정할 수 있어요
+        기한 및 확정 전까지 이 링크에서 수정할 수 있어요
       </div>
       <button
         onClick={() => set((st) => ({ attendeeScreen: 's5att', sheet: null, responded: Math.max(st.responded, 5) }))}
@@ -601,7 +764,7 @@ function RangeSheet() {
   const onDays = activeDays(r)
   const custom = r.week === '직접 선택'
   const calCells = buildCalendar(r, (days) => setRange({ dates: toggleDates(r, days) }))
-  const rangeNarrow = custom ? r.dates.length > 0 && r.dates.length <= 2 : onDays.length <= 2
+  const rangeNarrow = custom ? r.dates.length <= 2 : onDays.length <= 2
 
   const arrowStyle = (enabled: boolean): CSSProperties => ({
     width: 26,
@@ -692,14 +855,14 @@ function RangeSheet() {
     <BottomSheet onClose={close}>
       <div style={sheetTitle}>후보 범위</div>
 
-      <div style={{ fontSize: 12.5, fontWeight: 600, color: color.textQuaternary, margin: '18px 0 8px' }}>주간</div>
+      <div style={{ fontSize: 12.5, fontWeight: 600, color: color.textQuaternary, margin: '18px 0 8px', padding: '0 2px' }}>주간</div>
       <div style={{ display: 'flex', gap: 6 }}>
         {(['이번 주', '다음 주', '직접 선택'] as const).map((w) =>
           smallChip(w, r.week === w, () => setRange({ week: w })),
         )}
       </div>
 
-      {rangeNarrow && (
+      <Collapse open={rangeNarrow}>
         <div
           style={{
             marginTop: 14,
@@ -709,7 +872,6 @@ function RangeSheet() {
             display: 'flex',
             gap: 8,
             alignItems: 'flex-start',
-            animation: 'popIn .25s ease both',
           }}
         >
           <div style={{ fontSize: 13, lineHeight: 1.5 }}>⚠️</div>
@@ -717,9 +879,9 @@ function RangeSheet() {
             후보가 좁으면 모두가 괜찮은 시간을 찾기 어렵고, 누군가 못 오게 됐을 때 대안도 부족해져요
           </div>
         </div>
-      )}
+      </Collapse>
 
-      {custom && (
+      <Collapse open={custom}>
         <div style={{ marginTop: 14, background: color.fillLight, borderRadius: 14, padding: '12px 10px 10px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 6px 8px' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
@@ -803,11 +965,12 @@ function RangeSheet() {
             })}
           </div>
         </div>
-      )}
+      </Collapse>
 
-      {!custom && (
-        <>
-          <div style={{ fontSize: 12.5, fontWeight: 600, color: color.textQuaternary, margin: '16px 0 8px' }}>요일</div>
+      {/* 요일 섹션 — 직접 선택 모드에서는 접힘 */}
+      <Collapse open={!custom}>
+        <div>
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: color.textQuaternary, margin: '16px 0 8px', padding: '0 2px' }}>요일</div>
           <div style={{ display: 'flex', gap: 6 }}>
             {DAY_NAMES.map((d, i) => {
               const on = r.days[i]
@@ -840,11 +1003,11 @@ function RangeSheet() {
               )
             })}
           </div>
-          <div style={{ fontSize: 12, color: color.textQuaternary, marginTop: 7 }}>안 되는 요일만 꺼주세요</div>
-        </>
-      )}
+          <div style={{ fontSize: 12, color: color.textQuaternary, marginTop: 7, padding: '0 2px' }}>안 되는 요일만 꺼주세요</div>
+        </div>
+      </Collapse>
 
-      <div style={{ fontSize: 12.5, fontWeight: 600, color: color.textQuaternary, margin: '16px 0 8px' }}>시간 범위</div>
+      <div style={{ fontSize: 12.5, fontWeight: 600, color: color.textQuaternary, margin: '16px 0 8px', padding: '0 2px' }}>시간 범위</div>
       <div style={{ display: 'flex', gap: 8 }}>
         {timeCell(
           '시작',

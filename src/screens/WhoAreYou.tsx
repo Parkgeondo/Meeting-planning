@@ -21,14 +21,14 @@ export function WhoAreYou() {
         display: 'flex',
         flexDirection: 'column',
         flex: 1,
-        padding: '28px 24px 24px',
+        padding: '26px 15px 22px',
         animation: 'fadeUp .3s ease both',
       }}
     >
       <div style={{ fontSize: 13, fontWeight: 600, color: color.textQuaternary }}>{s.title} · 1시간</div>
       <div
         style={{
-          fontSize: 24,
+          fontSize: 23,
           fontWeight: 800,
           color: color.textPrimary,
           marginTop: 8,

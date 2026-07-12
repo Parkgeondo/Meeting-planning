@@ -10,10 +10,28 @@ export function SectionLabel({ children, style }: { children: ReactNode; style?:
         fontWeight: 600,
         color: color.textQuaternary,
         margin: '18px 0 8px',
+        padding: '0 2px',
         ...style,
       }}
     >
       {children}
+    </div>
+  )
+}
+
+/** Always-rendered collapsible: grid-rows 0fr↔1fr so open/close animates smoothly. */
+export function Collapse({ open, children }: { open: boolean; children: ReactNode }) {
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateRows: open ? '1fr' : '0fr',
+        opacity: open ? 1 : 0,
+        visibility: open ? 'visible' : 'hidden',
+        transition: 'grid-template-rows .4s cubic-bezier(.4,0,.2,1), opacity .3s ease, visibility .4s',
+      }}
+    >
+      <div style={{ overflow: 'hidden', minHeight: 0 }}>{children}</div>
     </div>
   )
 }
