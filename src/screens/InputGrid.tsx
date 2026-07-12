@@ -205,7 +205,6 @@ export function InputGrid() {
         </div>
       )}
 
-      {/* Grid */}
       <div style={{ marginTop: 12, touchAction: 'none', userSelect: 'none' }} onPointerMove={onGridMove}>
         <div style={{ display: 'flex', gap: 4, marginBottom: 6 }}>
           <div style={{ width: 30 }} />

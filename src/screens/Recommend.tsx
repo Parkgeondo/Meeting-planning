@@ -2,7 +2,6 @@ import { recOptions, type RecOption } from '../data'
 import { useStore } from '../state'
 import { color } from '../tokens'
 
-/** 카드 왼쪽 라디오 (22px 원). */
 function Radio({ selected }: { selected: boolean }) {
   return (
     <div
@@ -20,7 +19,6 @@ function Radio({ selected }: { selected: boolean }) {
   )
 }
 
-/** "시간 보기 →" 28px pill. */
 function ViewTimeBtn({ onClick }: { onClick: () => void }) {
   return (
     <button

@@ -3,15 +3,12 @@ import type { RangeState } from './state'
 
 export const fmtHour = (h: number): string => (h < 10 ? '0' + h : h) + ':00'
 
-/** Encoded-date (month*100+day) → "M/D". */
 export const fmtDateKey = (k: number): string => Math.floor(k / 100) + '/' + (k % 100)
 
-/** Active weekday labels, e.g. ['월','화','수','목','금']. */
 export function activeDays(range: RangeState): string[] {
   return range.days.map((v, i) => (v ? DAY_NAMES[i] : null)).filter((x): x is string => x !== null)
 }
 
-/** One-line candidate-range summary for the ① card and the sheet trigger. */
 export function rangeSummary(range: RangeState): string {
   const on = activeDays(range)
   const dayLabel = on.length === 5 ? '월–금' : on.join('·')
@@ -30,16 +27,13 @@ export function rangeSummary(range: RangeState): string {
 export const MIN_MONTH = 7
 export const MAX_MONTH = 12
 
-/** Month/day is in the past relative to today (2026-07-06). */
 export const isPastDate = (month: number, day: number): boolean => month === 7 && day < 6
 
-/** Encode a day within a month to the stored key. */
 export const encodeDate = (month: number, day: number): number => month * 100 + day
 
 export interface CalCell {
   key: string
   label: string
-  /** null for the leading "week select" column or empty pad cells. */
   onClick: (() => void) | null
   variant: 'weekSelect' | 'day' | 'pad'
   selected: boolean
@@ -48,10 +42,6 @@ export interface CalCell {
   selectable: boolean
 }
 
-/**
- * Build the month calendar grid: each row = [week-select cell, 7 day cells].
- * Tapping a day toggles it; tapping the week cell toggles the whole row.
- */
 export function buildCalendar(range: RangeState, toggle: (days: number[]) => void): CalCell[] {
   const month = range.month
   const offset = new Date(2026, month - 1, 1).getDay()
@@ -114,7 +104,6 @@ export function buildCalendar(range: RangeState, toggle: (days: number[]) => voi
   return cells
 }
 
-/** Toggle a set of days in the current month: add if any missing, else remove. */
 export function toggleDates(range: RangeState, days: number[]): number[] {
   const keys = days.map((d) => encodeDate(range.month, d))
   const toAdd = keys.filter((k) => !range.dates.includes(k))

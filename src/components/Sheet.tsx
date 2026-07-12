@@ -1,9 +1,7 @@
 import { createContext, useContext, type ReactNode } from 'react'
 
-/** True while the sheet is playing its exit animation (two-phase close). */
 export const SheetClosingContext = createContext(false)
 
-/** Bottom sheet shell: dim backdrop + rounded panel sliding up from the bottom. */
 export function BottomSheet({
   onClose,
   children,
@@ -11,7 +9,6 @@ export function BottomSheet({
 }: {
   onClose: () => void
   children: ReactNode
-  /** Render as a centered dialog card instead of a bottom-anchored sheet. */
   center?: boolean
 }) {
   const closing = useContext(SheetClosingContext)
@@ -27,7 +24,6 @@ export function BottomSheet({
         }}
       />
       {center ? (
-        // transform 센터링은 등장 애니메이션과 충돌하므로 flex 래퍼로 센터링.
         <div
           style={{
             position: 'absolute',

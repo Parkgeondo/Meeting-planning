@@ -121,7 +121,6 @@ function AttendeeScreen() {
 }
 
 function FrameSheets({ role }: { role: 'host' | 'attendee' }) {
-  // Sheets가 소유 프레임 판별과 two-phase 퇴장 애니메이션을 담당하므로 항상 렌더.
   return <Sheets role={role} />
 }
 
@@ -188,7 +187,6 @@ function Frame() {
         gap: 22,
       }}
     >
-      <div style={{ fontSize: 11, fontWeight: 700, color: color.textQuaternary }}>v1.1</div>
       <div
         style={{
           display: 'flex',

@@ -1,7 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { color } from '../tokens'
 
-/** Small gray section label above a field. */
 export function SectionLabel({ children, style }: { children: ReactNode; style?: CSSProperties }) {
   return (
     <div
@@ -19,7 +18,6 @@ export function SectionLabel({ children, style }: { children: ReactNode; style?:
   )
 }
 
-/** Always-rendered collapsible: grid-rows 0fr↔1fr so open/close animates smoothly. */
 export function Collapse({ open, children }: { open: boolean; children: ReactNode }) {
   return (
     <div
@@ -36,7 +34,6 @@ export function Collapse({ open, children }: { open: boolean; children: ReactNod
   )
 }
 
-/** iOS-style pill toggle (lunch exclusion). */
 export function Toggle({ on, onClick }: { on: boolean; onClick: () => void }) {
   return (
     <div
@@ -68,7 +65,6 @@ export function Toggle({ on, onClick }: { on: boolean; onClick: () => void }) {
   )
 }
 
-/** Full-width primary CTA pinned to the bottom of a screen. */
 export function CTA({
   children,
   onClick,
@@ -107,7 +103,6 @@ export function CTA({
   )
 }
 
-/** Selection chip that fills its flex row (length/deadline/week choices). */
 export function SelChip({
   label,
   active,
