@@ -290,7 +290,7 @@ export function InputGrid() {
                   boxSizing: 'border-box',
                 }}
               />
-              보통이예요
+              선호하지 않아요
             </div>
           </div>
           <div style={{ fontSize: 12, color: color.textQuaternary, textAlign: 'center', marginTop: 8 }}>

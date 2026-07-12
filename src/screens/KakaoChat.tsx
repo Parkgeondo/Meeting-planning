@@ -185,16 +185,7 @@ function HeaderIcons() {
         <circle cx="10.5" cy="10.5" r="6.5" stroke={headerIconStroke} strokeWidth="2" />
         <path d="M15.5 15.5L20 20" stroke={headerIconStroke} strokeWidth="2" strokeLinecap="round" />
       </svg>
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path
-          d="M5 4.5C5 3.7 5.7 3 6.5 3h2L10 7l-1.8 1.8c.9 2.1 2.9 4.1 5 5L15 12l4 1.5v2c0 .8-.7 1.5-1.5 1.5C10.6 17 7 13.4 7 6.5"
-          stroke={headerIconStroke}
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
-      </svg>
+     
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
         <path d="M4 6.5H20M4 12H20M4 17.5H20" stroke={headerIconStroke} strokeWidth="2" strokeLinecap="round" />
       </svg>

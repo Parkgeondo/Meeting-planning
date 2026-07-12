@@ -39,6 +39,7 @@ function ViewTimeBtn({ onClick }: { onClick: () => void }) {
         fontFamily: 'inherit',
         flex: 'none',
         whiteSpace: 'nowrap',
+        marginLeft: 'auto',
       }}
     >
       시간 보기 →
@@ -53,9 +54,7 @@ export function Recommend() {
   const recs = recOptions(s.reRec)
   const rec1 = recs[0]
   const rec23 = recs.slice(1)
-  const rec1Line = s.reRec
-    ? '지수님을 제외한 응답으로 다시 계산한 결과예요.'
-    : '모두 가능하면서, 아무도 참지 않아도 되는 유일한 시간이에요.'
+  const rec1Line = s.reRec ? '지수님을 제외한 응답으로 다시 계산한 결과예요.' : null
 
   const viewTime = (r: RecOption) => set({ hostScreen: 's5', hlCell: `${r.di}-${r.hi}`, sheet: null })
 
@@ -120,58 +119,71 @@ export function Recommend() {
           padding: '18px 16px',
           boxSizing: 'border-box',
           animation: 'popIn .35s cubic-bezier(.2,1.4,.4,1) both',
-          position: 'relative',
           cursor: 'pointer',
           transition: 'border .15s',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-          <div style={{ paddingTop: 2 }}>
-            <Radio selected={s.recSel === 'r1'} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Radio selected={s.recSel === 'r1'} />
+          <div
+            style={{
+              display: 'inline-block',
+              background: color.primary,
+              color: '#fff',
+              fontSize: 11.5,
+              fontWeight: 800,
+              padding: '4px 10px',
+              borderRadius: 20,
+            }}
+          >
+            추천 1위
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-              <div
-                style={{
-                  display: 'inline-block',
-                  background: color.primary,
-                  color: '#fff',
-                  fontSize: 11.5,
-                  fontWeight: 800,
-                  padding: '4px 10px',
-                  borderRadius: 20,
-                }}
-              >
-                추천 1위
-              </div>
-              <ViewTimeBtn onClick={() => viewTime(rec1)} />
-            </div>
-            <div style={{ fontSize: 25, fontWeight: 800, color: color.textPrimary, marginTop: 10, letterSpacing: '-.01em' }}>
-              {rec1.time}
-            </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 }}>
-              {rec1.badges.map((b) => (
-                <div
-                  key={b}
-                  style={{
-                    fontSize: 11.5,
-                    fontWeight: 700,
-                    color: color.primaryDeep,
-                    background: '#fff',
-                    border: '1px solid #D9E8FC',
-                    borderRadius: 14,
-                    padding: '4px 10px',
-                  }}
-                >
-                  {b}
-                </div>
-              ))}
-            </div>
-            <div style={{ fontSize: 13.5, color: color.textSecondary, marginTop: 12, lineHeight: 1.5, fontWeight: 600 }}>
-              {rec1Line}
-            </div>
-          </div>
+          <ViewTimeBtn onClick={() => viewTime(rec1)} />
         </div>
+        <div
+          style={{
+            fontSize: 25,
+            fontWeight: 800,
+            color: color.textPrimary,
+            marginTop: 12,
+            letterSpacing: '-.01em',
+            textAlign: 'left',
+          }}
+        >
+          {rec1.time}
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-start', gap: 6, marginTop: 12 }}>
+          {rec1.badges.map((b) => (
+            <div
+              key={b}
+              style={{
+                fontSize: 11.5,
+                fontWeight: 700,
+                color: color.primaryDeep,
+                background: '#fff',
+                border: '1px solid #D9E8FC',
+                borderRadius: 14,
+                padding: '4px 10px',
+              }}
+            >
+              {b}
+            </div>
+          ))}
+        </div>
+        {rec1Line && (
+          <div
+            style={{
+              fontSize: 13.5,
+              color: color.textSecondary,
+              marginTop: 12,
+              lineHeight: 1.5,
+              fontWeight: 600,
+              textAlign: 'left',
+            }}
+          >
+            {rec1Line}
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
@@ -191,37 +203,33 @@ export function Recommend() {
                 transition: 'border .15s',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                <div style={{ paddingTop: 2 }}>
-                  <Radio selected={sel} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Radio selected={sel} />
+                <div style={{ fontSize: 12, fontWeight: 800, color: color.textQuaternary, flex: 'none' }}>
+                  {r.rank}위
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                      <div style={{ fontSize: 12, fontWeight: 800, color: color.textQuaternary }}>{r.rank}위</div>
-                      <div style={{ fontSize: 16.5, fontWeight: 800, color: color.textPrimary }}>{r.time}</div>
-                    </div>
-                    <ViewTimeBtn onClick={() => viewTime(r)} />
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 9 }}>
-                    {r.badges.map((b) => (
-                      <div
-                        key={b}
-                        style={{
-                          fontSize: 11.5,
-                          fontWeight: 700,
-                          color: color.textTertiary,
-                          background: '#fff',
-                          border: `1px solid ${color.border}`,
-                          borderRadius: 14,
-                          padding: '4px 10px',
-                        }}
-                      >
-                        {b}
-                      </div>
-                    ))}
-                  </div>
+                <div style={{ fontSize: 16.5, fontWeight: 800, color: color.textPrimary, textAlign: 'left' }}>
+                  {r.time}
                 </div>
+                <ViewTimeBtn onClick={() => viewTime(r)} />
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-start', gap: 6, marginTop: 10 }}>
+                {r.badges.map((b) => (
+                  <div
+                    key={b}
+                    style={{
+                      fontSize: 11.5,
+                      fontWeight: 700,
+                      color: color.textTertiary,
+                      background: '#fff',
+                      border: `1px solid ${color.border}`,
+                      borderRadius: 14,
+                      padding: '4px 10px',
+                    }}
+                  >
+                    {b}
+                  </div>
+                ))}
               </div>
             </div>
           )

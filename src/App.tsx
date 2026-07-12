@@ -27,7 +27,7 @@ const ATTENDEE_NAV: NavChip[] = [
   { label: '0. 카톡', screen: 's4kakao' },
   { label: '4. 응답자', screen: 's4pre' },
   { label: '5. 입력', screen: 's4' },
-  { label: '6. 대시보드', screen: 's5att' },
+  { label: '6. 집계', screen: 's5att' },
   { label: '8. 상태', screen: 's7' },
 ]
 

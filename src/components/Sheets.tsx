@@ -15,6 +15,7 @@ import { Collapse, Toggle } from './ui'
 import lockIcon from '../assets/lock.png'
 import checkGreenIcon from '../assets/check-green.png'
 import clipboardIcon from '../assets/clipboard.png'
+import clockIcon from '../assets/clock.png'
 
 const SHEET_OWNER: Record<Exclude<Sheet, null>, 'host' | 'attendee'> = {
   range: 'host',
@@ -23,6 +24,7 @@ const SHEET_OWNER: Record<Exclude<Sheet, null>, 'host' | 'attendee'> = {
   confirm: 'host',
   role: 'attendee',
   submitted: 'attendee',
+  bail: 'attendee',
 }
 
 export function Sheets({ role }: { role: 'host' | 'attendee' }) {
@@ -31,23 +33,19 @@ export function Sheets({ role }: { role: 'host' | 'attendee' }) {
   const active = state.sheet && owner === role ? state.sheet : null
 
   const [shown, setShown] = useState<Sheet>(active)
-  const [closing, setClosing] = useState(false)
 
   useEffect(() => {
-    if (active) {
-      setShown(active)
-      setClosing(false)
-      return
-    }
-    setClosing(true)
-    const t = setTimeout(() => {
-      setShown(null)
-      setClosing(false)
-    }, 270)
-    return () => clearTimeout(t)
+    if (active) setShown(active)
   }, [active])
 
-  const shownNow = active ?? (closing ? shown : null)
+  useEffect(() => {
+    if (active || !shown) return
+    const t = setTimeout(() => setShown(null), 270)
+    return () => clearTimeout(t)
+  }, [active, shown])
+
+  const shownNow = active ?? shown
+  const closing = !active && !!shown
   if (!shownNow) return null
 
   let node: JSX.Element | null
@@ -70,11 +68,14 @@ export function Sheets({ role }: { role: 'host' | 'attendee' }) {
     case 'submitted':
       node = <SubmittedSheet />
       break
+    case 'bail':
+      node = <BailSheet />
+      break
     default:
       node = null
   }
 
-  return <SheetClosingContext.Provider value={closing && !active}>{node}</SheetClosingContext.Provider>
+  return <SheetClosingContext.Provider value={closing}>{node}</SheetClosingContext.Provider>
 }
 
 const sheetTitle: CSSProperties = { fontSize: 18, fontWeight: 800, color: color.textPrimary }
@@ -107,17 +108,16 @@ function AgendaCard({ agenda }: { agenda: string }) {
   )
 }
 
-function RoleBadge({ children }: { children: string }) {
+function RoleBadge({ children, tone = 'optional' }: { children: string; tone?: 'required' | 'optional' }) {
+  const required = tone === 'required'
   return (
     <span
       style={{
-        background: '#F2F4F6',
-        color: '#4E5968',
+        background: required ? '#EAF3FE' : '#F2F4F6',
+        color: required ? '#3182F6' : '#4E5968',
         borderRadius: 6,
-        padding: '2px 8px',
+        padding: '4px 8px',
         fontSize: 14.5,
-        fontWeight: 800,
-        verticalAlign: 'middle',
       }}
     >
       {children}
@@ -140,19 +140,6 @@ const revertLink: CSSProperties = {
   textUnderlineOffset: 3,
 }
 
-const ghostFull: CSSProperties = {
-  marginTop: 8,
-  width: '100%',
-  height: 42,
-  border: 'none',
-  background: 'none',
-  color: color.textQuaternary,
-  fontSize: 14,
-  fontWeight: 600,
-  cursor: 'pointer',
-  fontFamily: 'inherit',
-}
-
 function RoleReqSheet() {
   const { state, set } = useStore()
   const s = state
@@ -168,12 +155,11 @@ function RoleReqSheet() {
           <div style={{ fontSize: 18, fontWeight: 800, color: color.textPrimary, lineHeight: 1.4 }}>
             이 회의에서 {who}님은
             <br />
-            <RoleBadge>필수 참석</RoleBadge>으로 지정됐어요
+            <RoleBadge tone="required">필수 참석</RoleBadge>으로 지정됐어요
           </div>
           <AgendaCard agenda={agendaShown} />
           <div style={{ fontSize: 13.5, color: color.textTertiary, marginTop: 12, lineHeight: 1.6, padding: '0 2px' }}>
-            안건을 보고 참석이 필요하지 않다고 생각이 되면{' '}
-            <b style={{ color: color.textPrimary }}>주최자에게</b> 선택 참석 변경을 요청할 수 있어요.
+            안건을 보고 참석이 필요하지 않다고 생각이 되면 주최자에게 선택 참석 변경을 요청할 수 있어요.
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginTop: 16 }}>
             <input
@@ -197,7 +183,7 @@ function RoleReqSheet() {
             />
           </div>
           <button
-            onClick={() => objReady && set({ objSentByMe: true, orgObjection: 'pending' })}
+            onClick={() => objReady && set({ objSentByMe: true, orgObjection: 'pending', hostScreen: 's5' })}
             style={{
               marginTop: 14,
               width: '100%',
@@ -213,10 +199,7 @@ function RoleReqSheet() {
               transition: 'all .2s',
             }}
           >
-            참석 필요성에 의견 보내기
-          </button>
-          <button onClick={close} style={ghostFull}>
-            괜찮아요, 닫기
+            선택 참석 변경 요청하기
           </button>
         </>
       ) : (
@@ -224,11 +207,9 @@ function RoleReqSheet() {
           <div style={{ textAlign: 'center', paddingTop: 6, animation: 'popIn .3s ease both' }}>
             <CheckCircle />
             <div style={{ fontSize: 18, fontWeight: 800, color: color.textPrimary, marginTop: 14 }}>
-              주최자에게만 전달됐어요
+              주최자에게 의견을 전달했어요
             </div>
             <div style={{ fontSize: 13.5, color: color.textTertiary, marginTop: 8, lineHeight: 1.6 }}>
-              다른 참석자에게는 보이지 않아요.
-              <br />
               참석하게 될 수도 있으니, 가능한 시간은 이어서 알려주세요.
             </div>
             <button onClick={() => set({ objSentByMe: false, objChip: null, objText: '' })} style={revertLink}>
@@ -267,11 +248,9 @@ function RoleOptSheet() {
         <div style={{ textAlign: 'center', paddingTop: 6, animation: 'popIn .3s ease both' }}>
           <CheckCircle />
           <div style={{ fontSize: 18, fontWeight: 800, color: color.textPrimary, marginTop: 14 }}>
-            주최자에게만 전달됐어요
+            주최자에게 의견을 전달했어요
           </div>
           <div style={{ fontSize: 13.5, color: color.textTertiary, marginTop: 8, lineHeight: 1.6 }}>
-            다른 참석자에게는 보이지 않아요.
-            <br />
             참석하게 될 수도 있으니, 가능한 시간은 이어서 알려주세요.
           </div>
           <button onClick={() => set({ objSentByMe: false, objChip: null, objText: '' })} style={revertLink}>
@@ -287,8 +266,7 @@ function RoleOptSheet() {
           </div>
           <AgendaCard agenda={agendaShown} />
           <div style={{ fontSize: 13.5, color: color.textTertiary, marginTop: 12, lineHeight: 1.6, padding: '0 2px' }}>
-            안건을 보고 꼭 참석해야 한다고 생각이 되면{' '}
-            <b style={{ color: color.textPrimary }}>주최자에게</b> 필수 참석 변경을 요청할 수 있어요.
+            안건을 보고 꼭 참석해야 한다고 생각이 되면 주최자에게 필수 참석 변경을 요청할 수 있어요.
           </div>
           <input
             value={s.objText}
@@ -328,9 +306,6 @@ function RoleOptSheet() {
             }}
           >
             필수 참석으로 변경 요청하기
-          </button>
-          <button onClick={() => set({ optOutBy: who })} style={ghostFull}>
-            이번엔 빠질게요
           </button>
         </>
       )}
@@ -743,6 +718,56 @@ function SubmittedSheet() {
         }}
       >
         주최자 대시보드 보기 →
+      </button>
+    </BottomSheet>
+  )
+}
+
+function BailSheet() {
+  const { set } = useStore()
+  const close = () => set({ sheet: null })
+  return (
+    <BottomSheet onClose={close}>
+      <div style={{ fontSize: 18, fontWeight: 800, color: color.textPrimary, lineHeight: 1.4 }}>
+        혹시 일정이 바뀌어도,
+        대안이 준비돼 있어요
+      </div>
+      <div style={{ fontSize: 13.5, color: color.textTertiary, marginTop: 10, lineHeight: 1.6, padding: '0 2px' }}>
+        응답을 다시 모으지 않고, 후보 시간으로 대안을 준비해드려요.
+      </div>
+      <div
+        style={{
+          marginTop: 12,
+          background: color.fillLight,
+          borderRadius: 12,
+          padding: 12,
+          display: 'flex',
+          gap: 8,
+          alignItems: 'flex-start',
+        }}
+      >
+        <img src={clockIcon} alt="" width={16} height={16} style={{ flex: 'none', marginTop: 1 }} />
+        <div style={{ fontSize: 12.5, fontWeight: 600, color: color.textSecondary, lineHeight: 1.5 }}>
+          이미 목요일 10시, 수요일 16시 같은 대안 후보가 준비돼 있어요
+        </div>
+      </div>
+      <button
+        onClick={() => set({ bailed: true, sheet: null })}
+        style={{
+          marginTop: 16,
+          width: '100%',
+          height: 48,
+          border: 'none',
+          borderRadius: 14,
+          background: color.primary,
+          color: '#fff',
+          fontSize: 15,
+          fontWeight: 700,
+          cursor: 'pointer',
+          fontFamily: 'inherit',
+        }}
+      >
+        주최자에게 알리기
       </button>
     </BottomSheet>
   )

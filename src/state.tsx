@@ -37,7 +37,7 @@ function applyScreenNav(
     statusView: screen === 's7' || statusView === 'att' ? 'att' : s.statusView,
   }
 }
-export type Sheet = 'role' | 'info' | 'cell' | 'confirm' | 'submitted' | 'range' | null
+export type Sheet = 'role' | 'info' | 'cell' | 'confirm' | 'submitted' | 'range' | 'bail' | null
 export type Role = '필수' | '선택'
 export type Week = '이번 주' | '다음 주' | '직접 선택'
 export type OrgObjection = 'pending' | 'accepted' | 'kept'
