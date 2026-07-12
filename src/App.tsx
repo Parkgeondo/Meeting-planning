@@ -15,20 +15,20 @@ import { Sheets } from './components/Sheets'
 type NavChip = { label: string; screen: Screen }
 
 const HOST_NAV: NavChip[] = [
-  { label: '① 생성', screen: 's1' },
-  { label: '② 지정', screen: 's2' },
-  { label: '③ 공유', screen: 's3' },
-  { label: '⑤ 집계 ★', screen: 's5' },
-  { label: '⑥ 추천 ★', screen: 's6' },
-  { label: '⑦ 상태', screen: 's7' },
+  { label: '1. 생성', screen: 's1' },
+  { label: '2. 지정', screen: 's2' },
+  { label: '3. 공유', screen: 's3' },
+  { label: '6. 집계', screen: 's5' },
+  { label: '7. 추천', screen: 's6' },
+  { label: '8. 상태', screen: 's7' },
 ]
 
 const ATTENDEE_NAV: NavChip[] = [
-  { label: '⓪ 카톡', screen: 's4kakao' },
-  { label: '③.5 응답자', screen: 's4pre' },
-  { label: '④ 입력 ★', screen: 's4' },
-  { label: '⑤ 대시보드', screen: 's5att' },
-  { label: '⑦ 상태', screen: 's7' },
+  { label: '0. 카톡', screen: 's4kakao' },
+  { label: '4. 응답자', screen: 's4pre' },
+  { label: '5. 입력', screen: 's4' },
+  { label: '6. 대시보드', screen: 's5att' },
+  { label: '8. 상태', screen: 's7' },
 ]
 
 function FlowNav({

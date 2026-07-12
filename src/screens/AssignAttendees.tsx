@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useStore } from '../state'
 import { avatarColor, color } from '../tokens'
 import { CTA } from '../components/ui'
@@ -17,6 +18,13 @@ const segStyle = (on: boolean): CSSProperties => ({
   boxShadow: on ? '0 1px 3px rgba(0,0,0,.08)' : 'none',
   transition: 'all .15s',
 })
+
+const rowMotion = {
+  initial: { opacity: 0, scale: 0.88, y: -6 },
+  animate: { opacity: 1, scale: 1, y: 0 },
+  exit: { opacity: 0, scale: 0.88, y: -4 },
+  transition: { type: 'spring' as const, stiffness: 480, damping: 32, mass: 0.7 },
+}
 
 export function AssignAttendees() {
   const { state, set, go, names } = useStore()
@@ -136,77 +144,84 @@ export function AssignAttendees() {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 14 }}>
-        {names.map((n, i) => {
-          const isContact = /[0-9@]/.test(n)
-          return (
-            <div
-              key={n}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                background: color.fillLight,
-                borderRadius: 14,
-                padding: '10px 12px',
-              }}
-            >
-              <div
+        <AnimatePresence mode="popLayout">
+          {names.map((n, i) => {
+            const isContact = /[0-9@]/.test(n)
+            return (
+              <motion.div
+                key={n}
+                layout
+                initial={rowMotion.initial}
+                animate={rowMotion.animate}
+                exit={rowMotion.exit}
+                transition={rowMotion.transition}
                 style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: '50%',
-                  background: avatarColor(n, i),
-                  color: '#fff',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: isContact ? 16 : 14,
-                  fontWeight: 700,
-                  flex: 'none',
+                  gap: 12,
+                  background: color.fillLight,
+                  borderRadius: 14,
+                  padding: '10px 12px',
                 }}
               >
-                {isContact ? '👤' : n[0]}
-              </div>
-              <div style={{ flex: 1, fontSize: 15, fontWeight: 600, color: color.textPrimary }}>{n}</div>
-              <div style={{ display: 'flex', background: color.canvas, borderRadius: 10, padding: 2 }}>
-                <button
-                  onClick={() => set((st) => ({ roles: { ...st.roles, [n]: '필수' } }))}
-                  style={segStyle(s.roles[n] === '필수')}
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '50%',
+                    background: avatarColor(n, i),
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: isContact ? 16 : 14,
+                    fontWeight: 700,
+                    flex: 'none',
+                  }}
                 >
-                  필수
-                </button>
+                  {isContact ? '👤' : n[0]}
+                </div>
+                <div style={{ flex: 1, fontSize: 15, fontWeight: 600, color: color.textPrimary }}>{n}</div>
+                <div style={{ display: 'flex', background: color.canvas, borderRadius: 10, padding: 2 }}>
+                  <button
+                    onClick={() => set((st) => ({ roles: { ...st.roles, [n]: '필수' } }))}
+                    style={segStyle(s.roles[n] === '필수')}
+                  >
+                    필수
+                  </button>
+                  <button
+                    onClick={() => set((st) => ({ roles: { ...st.roles, [n]: '선택' } }))}
+                    style={segStyle((s.roles[n] || '선택') === '선택')}
+                  >
+                    선택
+                  </button>
+                </div>
                 <button
-                  onClick={() => set((st) => ({ roles: { ...st.roles, [n]: '선택' } }))}
-                  style={segStyle((s.roles[n] || '선택') === '선택')}
+                  onClick={() => removeName(n)}
+                  disabled={names.length <= 1}
+                  aria-label={`${n} 삭제`}
+                  style={{
+                    width: 28,
+                    height: 28,
+                    border: 'none',
+                    borderRadius: 8,
+                    background: 'transparent',
+                    color: names.length <= 1 ? color.borderDashed : color.textQuaternary,
+                    fontSize: 18,
+                    fontWeight: 700,
+                    cursor: names.length <= 1 ? 'default' : 'pointer',
+                    fontFamily: 'inherit',
+                    padding: 0,
+                    flex: 'none',
+                    lineHeight: 1,
+                  }}
                 >
-                  선택
+                  ×
                 </button>
-              </div>
-              <button
-                onClick={() => removeName(n)}
-                disabled={names.length <= 1}
-                aria-label={`${n} 삭제`}
-                style={{
-                  width: 28,
-                  height: 28,
-                  border: 'none',
-                  borderRadius: 8,
-                  background: 'transparent',
-                  color: names.length <= 1 ? color.borderDashed : color.textQuaternary,
-                  fontSize: 18,
-                  fontWeight: 700,
-                  cursor: names.length <= 1 ? 'default' : 'pointer',
-                  fontFamily: 'inherit',
-                  padding: 0,
-                  flex: 'none',
-                  lineHeight: 1,
-                }}
-              >
-                ×
-              </button>
-            </div>
-          )
-        })}
+              </motion.div>
+            )
+          })}
+        </AnimatePresence>
       </div>
 
       <div
